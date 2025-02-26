@@ -10,10 +10,10 @@ namespace PaleyExpressions
     {
         private readonly TokenType _type;
         private readonly string _lexeme;
-        private readonly object _literal;
+        private readonly object? _literal;
         private readonly int _line;
 
-        Token(TokenType type, String lexeme, Object literal, int line)
+        internal Token(TokenType type, string lexeme, object? literal, int line)
         {
             _type = type;
             _lexeme = lexeme;
