@@ -5,5 +5,6 @@ for(;;)
 
     var command = Console.ReadLine();
 
-    PaleyExpressions.Runner.Run(command);
+    var result = PaleyExpressions.Runner.Run(command);
+    Console.WriteLine(result);
 }

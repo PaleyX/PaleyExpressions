@@ -10,7 +10,7 @@
             //R VisitGetExpr(Get expr);
             R VisitGroupingExpr(Grouping expr);
             R VisitLiteralExpr(Literal expr);
-            R VisitLogicalExpr(Logical expr);
+            //R VisitLogicalExpr(Logical expr);
             //R VisitSetExpr(Set expr);
             //R VisitSuperExpr(Super expr);
             //R VisitThisExpr(This expr);
@@ -45,14 +45,14 @@
             internal override R Accept<R>(IVisitor<R> visitor) => visitor.VisitLiteralExpr(this);
         }
 
-        internal class Logical(Expr left, Token op, Expr right) : Expr
-        {
-            internal Expr Left { get; } = left;
-            internal Token Operator { get; } = op;
-            internal Expr Right { get; } = right;
+        //internal class Logical(Expr left, Token op, Expr right) : Expr
+        //{
+        //    internal Expr Left { get; } = left;
+        //    internal Token Operator { get; } = op;
+        //    internal Expr Right { get; } = right;
 
-            internal override R Accept<R>(IVisitor<R> visitor) => visitor.VisitLogicalExpr(this);
-        }
+        //    internal override R Accept<R>(IVisitor<R> visitor) => visitor.VisitLogicalExpr(this);
+        //}
 
         internal class Unary(Token op, Expr right) : Expr
         {

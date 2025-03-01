@@ -11,6 +11,10 @@
                 var expression = parser.Parse();
 
                 Console.WriteLine(new AstPrinter().Print(expression));
+
+                var result = new Interpreter().Interpret(expression);
+
+                return result;
             }
             catch (Exception e)
             {
