@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static PaleyExpressions.TokenType;
+﻿using static PaleyExpressions.TokenType;
 
 namespace PaleyExpressions
 {
-    internal class Scanner
+    internal class Scanner(string source)
     {
-        private readonly string _source;
+        private readonly string _source = source;
         private readonly List<Token> _tokens = [];
         private int _start = 0;
         private int _current = 0;
@@ -23,11 +17,6 @@ namespace PaleyExpressions
             { "or",     OR },
             { "true",   TRUE },
         };
-
-        internal Scanner(string source)
-        {
-            _source = source;
-        }
 
         internal List<Token> ScanTokens()
         {
