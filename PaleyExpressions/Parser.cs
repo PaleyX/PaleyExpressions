@@ -10,7 +10,35 @@ namespace PaleyExpressions
 
         internal Expr Parse() => Expression();
 
-        private Expr Expression() => Equality();
+        private Expr Expression() => Or();
+
+        private Expr Or()
+        {
+            Expr expr = And();
+
+            while (Match(OR))
+            {
+                var op = Previous();
+                var right = And();
+                expr = new Expr.Logical(expr, op, right);
+            }
+
+            return expr;
+        }
+
+        private Expr And()
+        {
+            Expr expr = Equality();
+
+            while (Match(AND))
+            {
+                var op = Previous();
+                var right = Equality();
+                expr = new Expr.Logical(expr, op, right);
+            }
+
+            return expr;
+        }
 
         private Expr Equality()
         {
@@ -94,11 +122,11 @@ namespace PaleyExpressions
             if (Match(LEFT_PAREN))
             {
                 var expr = Expression();
-                Consume(RIGHT_PAREN, "Expect ')' after expression.");
+                Consume(RIGHT_PAREN, "Expect ')' after expression");
                 return new Expr.Grouping(expr);
             }
 
-            throw ScannerException.TokenMessage(Peek(), "Expect expression.");
+            throw ScannerException.TokenMessage(Peek(), "Expect expression");
         }
 
         private Token Consume(TokenType type, string message)

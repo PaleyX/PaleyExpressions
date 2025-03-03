@@ -22,10 +22,10 @@ namespace PaleyExpressions
             return expr.Value.ToString();
         }
 
-        //public string VisitLogicalExpr(Expr.Logical expr)
-        //{
-        //    return Parenthesize(expr.Operator.Lexeme, expr.Left, expr.Right);
-        //}
+        public string VisitLogicalExpr(Expr.Logical expr)
+        {
+            return Parenthesize(expr.Operator.Lexeme, expr.Left, expr.Right);
+        }
 
         public string VisitUnaryExpr(Expr.Unary expr)
         {
@@ -36,14 +36,14 @@ namespace PaleyExpressions
         {
             var builder = new StringBuilder();
 
-            builder.Append("(").Append(name);
+            builder.Append('(').Append(name);
 
             foreach (var expr in exprs)
             {
-                builder.Append(" ");
+                builder.Append(' ');
                 builder.Append(expr.Accept(this));
             }
-            builder.Append(")");
+            builder.Append(')');
 
             return builder.ToString();
         }

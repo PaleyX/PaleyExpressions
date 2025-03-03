@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static PaleyExpressions.TokenType;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using static PaleyExpressions.TokenType;
 
 namespace PaleyExpressions
 {
@@ -21,6 +15,22 @@ namespace PaleyExpressions
             return expr.Value;
         }
 
+        public object? VisitLogicalExpr(Expr.Logical expr)
+        {
+            var left = Evaluate(expr.Left);
+
+            if (expr.Operator.TokenType == OR) 
+            {
+                if (IsTruthy(left)) return left;
+            } 
+            else
+            {
+                if (!IsTruthy(left)) return left;
+            }
+
+            return Evaluate(expr.Right);
+        }
+
         public object? VisitGroupingExpr(Expr.Grouping expr)
         {
             return Evaluate(expr.Expression);
@@ -35,7 +45,7 @@ namespace PaleyExpressions
                 case BANG:
                     return !IsTruthy(right);
                 case MINUS:
-                    return -(double)right;
+                    return -CheckNumberOperand(expr.Operator, right);
             }
 
             // Unreachable.
@@ -47,39 +57,60 @@ namespace PaleyExpressions
             var left = Evaluate(expr.Left);
             var right = Evaluate(expr.Right);
 
-            switch (expr.Operator.TokenType) 
+            switch (expr.Operator.TokenType)
             {
                 case GREATER:
-                    return (double)left > (double)right;
+                    {
+                        var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                        return lhs > rhs;
+                    }
                 case GREATER_EQUAL:
-                    return (double)left >= (double)right;
+                    {
+                        var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                        return lhs >= rhs;
+                    }
                 case LESS:
-                    return (double)left < (double)right;
+                    {
+                        var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                        return lhs < rhs;
+                    }
                 case LESS_EQUAL:
-                    return (double)left <= (double)right;
+                    {
+                        var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                        return lhs <= rhs;
+                    }
                 case MINUS:
-                    return (double)left - (double)right;
-                case BANG_EQUAL: 
+                    {
+                        var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                        return lhs - rhs;
+                    }
+                case BANG_EQUAL:
                     return !IsEqual(left, right);
-                case EQUAL_EQUAL: 
+                case EQUAL_EQUAL:
                     return IsEqual(left, right);
                 case PLUS:
-                    if (left is double d1 && right is double d2) 
+                    if (left is double d1 && right is double d2)
                     {
                         return d1 + d2;
                     }
 
-                    if (left is string s1 && right is string s2) 
+                    if (left is string s1 && right is string s2)
                     {
                         return s1 + s2;
                     }
-                    break;
-                case SLASH:
-                    return (double)left / (double)right;
-                case STAR:
-                    return (double)left * (double)right;
-            }
 
+                    throw ScannerException.TokenMessage(expr.Operator, "Operands must be two numbers or two strings");
+                case SLASH:
+                    {
+                        var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                        return lhs / rhs;
+                    }
+                case STAR:
+                    {
+                        var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                        return lhs * rhs;
+                    }
+            }
             // Unreachable.
             return null;
         }
@@ -117,6 +148,26 @@ namespace PaleyExpressions
             }
 
             return a.Equals(b);
+        }
+
+        private static double CheckNumberOperand(Token token, object? operand)
+        {
+            if (operand is double d)
+            {
+                return d;
+            }
+
+            throw ScannerException.TokenMessage(token, "Operand must be a number");
+        }
+
+        private static (double lhs, double rhs) CheckNumberOperands(Token token, object? left, object? right)
+        {
+            if(left is double d1 && right is double d2)
+            {
+                return (d1, d2);
+            }
+
+            throw ScannerException.TokenMessage(token, "Operands must be numbers");
         }
     }
 }
