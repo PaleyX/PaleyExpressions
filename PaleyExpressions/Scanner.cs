@@ -4,12 +4,11 @@ namespace PaleyExpressions
 {
     internal class Scanner(string source)
     {
-        private readonly string _source = source;
         private readonly List<Token> _tokens = [];
-        private int _start = 0;
-        private int _current = 0;
+        private int _start;
+        private int _current;
 
-        private static Dictionary<string, TokenType> _keywords = new()
+        private static readonly Dictionary<string, TokenType> _keywords = new()
         {
             { "and",    AND },
             { "false",  FALSE },
@@ -34,7 +33,7 @@ namespace PaleyExpressions
 
         private bool IsAtEnd()
         {
-            return _current >= _source.Length;
+            return _current >= source.Length;
         }
 
         private void ScanToken()
@@ -104,7 +103,7 @@ namespace PaleyExpressions
             Advance();
 
             // Trim the surrounding quotes.
-            string value = _source[(_start + 1)..(_current - 1)];
+            var value = source[(_start + 1)..(_current - 1)];
             AddToken(STRING, value);
         }
 
@@ -121,19 +120,16 @@ namespace PaleyExpressions
                 while (IsDigit(Peek())) Advance();
             }
 
-            AddToken(NUMBER, double.Parse(_source[_start.._current]));
+            AddToken(NUMBER, double.Parse(source[_start.._current]));
         }
 
         private void ScanIdentifier()
         {
             while (IsAlphaNumeric(Peek())) Advance();
 
-            var text = _source[_start.._current];
+            var text = source[_start.._current];
 
-            if(!_keywords.TryGetValue(text, out var tokenType))
-            {
-                tokenType = IDENTIFIER;
-            }
+            var tokenType = _keywords.GetValueOrDefault(text, IDENTIFIER);
 
             AddToken(tokenType);
         }
@@ -145,7 +141,7 @@ namespace PaleyExpressions
                 return false;
             }
 
-            if (_source[_current] != expected)
+            if (source[_current] != expected)
             {
                 return false;
             }
@@ -157,7 +153,7 @@ namespace PaleyExpressions
 
         private char Advance()
         {
-            return _source[_current++];
+            return source[_current++];
         }
 
         private char Peek()
@@ -167,37 +163,30 @@ namespace PaleyExpressions
                 return '\0';
             }
 
-            return _source[_current];
+            return source[_current];
         }
 
         private char PeekNext()
         {
-            if (_current + 1 >= _source.Length)
+            if (_current + 1 >= source.Length)
             {
                 return '\0';
             }
 
-            return _source[_current + 1];
+            return source[_current + 1];
         }
 
-        private void AddToken(TokenType type)
+        private void AddToken(TokenType type, object? literal = null)
         {
-            AddToken(type, null);
-        }
-
-        private void AddToken(TokenType type, object? literal)
-        {
-            string text = _source[_start.._current];
+            var text = source[_start.._current];
             _tokens.Add(new Token(type, text, literal));
         }
 
-        private static bool IsDigit(char c) => c >= '0' && c <= '9';
+        private static bool IsDigit(char c) => c is >= '0' and <= '9';
 
         private static bool IsAlpha(char c)
         {
-            return (c >= 'a' && c <= 'z') ||
-                   (c >= 'A' && c <= 'Z') ||
-                    c == '_';
+            return c is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or '_';
         }
 
         private static bool IsAlphaNumeric(char c) => IsAlpha(c) || IsDigit(c);

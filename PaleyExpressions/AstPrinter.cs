@@ -11,6 +11,16 @@ namespace PaleyExpressions
             return Parenthesize(expr.Operator.Lexeme, expr.Left, expr.Right);
         }
 
+        public string VisitCallExpr(Expr.Call expr)
+        {
+            return Parenthesize2("fn", expr.Callee, expr.Arguments);
+        }
+
+        public string VisitVariableExpr(Expr.Variable expr)
+        {
+            return expr.Name.Lexeme;
+        }
+
         public string VisitGroupingExpr(Expr.Grouping expr)
         {
             return Parenthesize("group", expr.Expression);
@@ -46,6 +56,42 @@ namespace PaleyExpressions
             builder.Append(')');
 
             return builder.ToString();
+        }
+
+        private string Parenthesize2(string name, params object?[] parts)
+        {
+            var builder = new StringBuilder();
+
+            builder.Append('(').Append(name);
+            Transform(builder, parts);
+            builder.Append(')');
+
+            return builder.ToString();
+        }
+
+        private void Transform(StringBuilder builder, params object?[] parts)
+        {
+            foreach (object? part in parts)
+            {
+                builder.Append(' ');
+
+                if (part is Expr expr) 
+                {
+                    builder.Append(expr.Accept(this));
+                } 
+                else if (part is Token token) 
+                {
+                    builder.Append(token.Lexeme);
+                }
+                else if (part is List<Expr> list) 
+                {
+                    Transform(builder, [.. list]);
+                }
+                else
+                {
+                    builder.Append(part);
+                }
+            }
         }
     }
 }

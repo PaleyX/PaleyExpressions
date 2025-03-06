@@ -4,7 +4,7 @@ namespace PaleyExpressions
 {
     internal class Parser(List<Token> tokens)
     {
-        private int _current = 0;
+        private int _current;
 
         private List<Token> Tokens { get; } = tokens;
 
@@ -105,7 +105,26 @@ namespace PaleyExpressions
                 return new Expr.Unary(op, right);
             }
 
-            return Primary();
+            return Call();
+        }
+
+        private Expr Call()
+        {
+            Expr expr = Primary();
+
+            while (true)
+            {
+                if (Match(LEFT_PAREN))
+                {
+                    expr = FinishCall(expr);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return expr;
         }
 
         private Expr Primary()
@@ -117,6 +136,11 @@ namespace PaleyExpressions
             if (Match(NUMBER, STRING))
             {
                 return new Expr.Literal(Previous().Literal);
+            }
+
+            if (Match(IDENTIFIER))
+            {
+                return new Expr.Variable(Previous());
             }
 
             if (Match(LEFT_PAREN))
@@ -178,5 +202,22 @@ namespace PaleyExpressions
         private Token Peek() => Tokens[_current];
 
         private Token Previous() => Tokens[_current - 1];
+
+        private Expr FinishCall(Expr callee)
+        {
+            var arguments = new List<Expr>();
+
+            if (!Check(RIGHT_PAREN))
+            {
+                do
+                {
+                    arguments.Add(Expression());
+                } while (Match(COMMA));
+            }
+
+            Token paren = Consume(RIGHT_PAREN, "Expect ')' after arguments");
+
+            return new Expr.Call(callee, paren, arguments);
+        }
     }
 }

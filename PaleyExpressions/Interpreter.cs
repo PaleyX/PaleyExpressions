@@ -36,6 +36,11 @@ namespace PaleyExpressions
             return Evaluate(expr.Expression);
         }
 
+        public object? VisitVariableExpr(Expr.Variable expr)
+        {
+            return "Hello";
+        }
+
         public object? VisitUnaryExpr(Expr.Unary expr)
         {
             var right = Evaluate(expr.Right);
@@ -113,6 +118,22 @@ namespace PaleyExpressions
             }
             // Unreachable.
             return null;
+        }
+
+        public object VisitCallExpr(Expr.Call expr)
+        {
+            //Object callee = evaluate(expr.callee);
+
+            //List<Object> arguments = new ArrayList<>();
+            //for (Expr argument : expr.arguments)
+            //{
+            //    arguments.add(evaluate(argument));
+            //}
+
+            //LoxCallable function = (LoxCallable)callee;
+            //return function.call(this, arguments);
+
+            return "hello";
         }
 
         private object? Evaluate(Expr expr)

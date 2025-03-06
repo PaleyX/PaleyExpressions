@@ -16,8 +16,7 @@
         IDENTIFIER, STRING, NUMBER,
 
         // Keywords.
-        AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR,
-        PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
+        AND, FALSE, NIL, OR, TRUE, 
 
         EOF
     }
