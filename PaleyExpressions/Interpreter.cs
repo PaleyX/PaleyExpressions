@@ -133,7 +133,9 @@ internal class Interpreter : Expr.IVisitor<object?>
         //LoxCallable function = (LoxCallable)callee;
         //return function.call(this, arguments);
 
-        return "hello";
+        var args = expr.Arguments.Select(Evaluate);
+
+        return expr.Function.Invoke(null, [.. args]);
     }
 
     private object? Evaluate(Expr expr)

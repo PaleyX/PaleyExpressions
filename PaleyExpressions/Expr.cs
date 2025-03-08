@@ -1,4 +1,6 @@
-﻿namespace PaleyExpressions;
+﻿using System.Reflection;
+
+namespace PaleyExpressions;
 
 internal abstract class Expr
 {
@@ -31,11 +33,12 @@ internal abstract class Expr
         internal override T Accept<T>(IVisitor<T> visitor) => visitor.VisitBinaryExpr(this);
     }
 
-    internal class Call(Expr callee, Token paren, List<Expr> arguments) : Expr
+    internal class Call(Expr callee, Token paren, List<Expr> arguments, MethodInfo function) : Expr
     {
         internal Expr Callee { get; } = callee;
         internal Token Paren { get; } = paren;
         internal List<Expr> Arguments { get; } = arguments;
+        internal MethodInfo Function { get; } = function;
 
         internal override T Accept<T>(IVisitor<T> visitor) => visitor.VisitCallExpr(this);
     }

@@ -21,12 +21,22 @@ namespace PaleyExpressions
                 throw new ScannerException($"Unknown function '{name}'");
             }
 
+            if (!function.IsStatic)
+            {
+                throw new ScannerException("Callable function '{name}' must be static");
+            }
+
+            if (function.IsGenericMethod)
+            {
+                throw new ScannerException("Callable function '{name}' cannot be generic");
+            }
+
             if (function.GetParameters().Length != args.Count())
             {
                 throw new ScannerException($"Function '{name}' expected {function.GetParameters().Length} argument(s) but got {args.Count()}");
             }
 
-            return null;
+            return function;
         }
     }
 }

@@ -221,8 +221,8 @@ internal class Parser(List<Token> tokens)
             throw new ScannerException("Empty function name");
         }
 
-        var x = Tools.GetFunction(variable.Name.Lexeme, arguments);
+        var function = Tools.GetFunction(variable.Name.Lexeme, arguments);
 
-        return new Expr.Call(callee, paren, arguments);
+        return new Expr.Call(callee, paren, arguments, function);
     }
 }
