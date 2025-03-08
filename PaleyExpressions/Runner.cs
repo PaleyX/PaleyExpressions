@@ -10,7 +10,7 @@ public static class Runner
             var parser = new Parser(tokens);
             var expression = parser.Parse();
 
-            Console.WriteLine(new AstPrinter().Print(expression));
+            //Console.WriteLine(new AstPrinter().Print(expression));
 
             var result = new Interpreter().Interpret(expression);
 

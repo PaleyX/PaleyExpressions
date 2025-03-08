@@ -11,5 +11,7 @@ namespace PaleyExpressions
 
         [Function("lower")]
         public static string Lower(string s) => s.ToLower();
+
+        internal static List<Type> FunctionSources { get; } = [typeof(Builtins)];
     }
 }

@@ -4,9 +4,9 @@ namespace PaleyExpressions
 {
     internal static class Tools
     {
-        internal static MethodInfo? GetFunction(string name, IEnumerable<Expr> args)
+        internal static MethodInfo GetFunction(string name, IEnumerable<Expr> args)
         {
-            var methods = typeof(Builtins).GetMethods()
+            var methods = Builtins.FunctionSources[0].GetMethods()
                 .Where(m => m.GetCustomAttributes(typeof(FunctionAttribute), false).Length > 0)
                 .ToList();
 
