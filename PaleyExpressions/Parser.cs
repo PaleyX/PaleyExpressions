@@ -2,10 +2,11 @@
 
 namespace PaleyExpressions;
 
-internal class Parser(List<Token> tokens)
+internal class Parser(List<Token> tokens, Type? functions = null)
 {
     private int _current;
     private List<Token> Tokens { get; } = tokens;
+    private Type? Functions { get; } = functions;
 
     internal Expr Parse() => Expression();
 
@@ -219,6 +220,14 @@ internal class Parser(List<Token> tokens)
         if (callee is not Expr.Variable variable)
         {
             throw new ScannerException("Empty function name");
+        }
+
+        if (Functions != null)
+        {
+            if (!Builtins.FunctionSources.Contains(Functions))
+            {
+                Builtins.AddFunctionsClass(Functions);
+            }
         }
 
         var function = Tools.GetFunction(variable.Name.Lexeme, arguments);

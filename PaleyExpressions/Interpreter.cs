@@ -2,7 +2,7 @@
 
 namespace PaleyExpressions;
 
-internal class Interpreter : Expr.IVisitor<object?>
+internal class Interpreter(Dictionary<string, object?>? variables = null) : Expr.IVisitor<object?>
 {
     public object? Interpret(Expr expression)
     {
@@ -38,7 +38,12 @@ internal class Interpreter : Expr.IVisitor<object?>
 
     public object? VisitVariableExpr(Expr.Variable expr)
     {
-        return "Hello";
+        if (variables != null && variables.TryGetValue(expr.Name.Lexeme, out var value))
+        {
+            return value;
+        }
+
+        throw new ScannerException($"Unknown variable '{expr.Name.Lexeme}'");
     }
 
     public object? VisitUnaryExpr(Expr.Unary expr)
@@ -122,17 +127,6 @@ internal class Interpreter : Expr.IVisitor<object?>
 
     public object VisitCallExpr(Expr.Call expr)
     {
-        //Object callee = evaluate(expr.callee);
-
-        //List<Object> arguments = new ArrayList<>();
-        //for (Expr argument : expr.arguments)
-        //{
-        //    arguments.add(evaluate(argument));
-        //}
-
-        //LoxCallable function = (LoxCallable)callee;
-        //return function.call(this, arguments);
-
         var args = expr.Arguments.Select(Evaluate);
 
         return expr.Function.Invoke(null, [.. args]);
@@ -160,17 +154,12 @@ internal class Interpreter : Expr.IVisitor<object?>
 
     private static bool IsEqual(object? a, object? b)
     {
-        if (a == null && b == null)
+        return a switch
         {
-            return true;
-        }
-
-        if (a == null)
-        {
-            return false;
-        }
-
-        return a.Equals(b);
+            null when b == null => true,
+            null => false,
+            _ => a.Equals(b)
+        };
     }
 
     private static double CheckNumberOperand(Token token, object? operand)

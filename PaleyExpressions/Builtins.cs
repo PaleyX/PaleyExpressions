@@ -1,17 +1,21 @@
 ﻿// ReSharper disable UnusedMember.Global
-namespace PaleyExpressions
+namespace PaleyExpressions;
+
+public static class Builtins
 {
-    public static class Builtins
+    [Function("abs")]
+    public static double Abs(double d) => Math.Abs(d);
+
+    [Function("upper")]
+    public static string Upper(string s) => s.ToUpper();
+
+    [Function("lower")]
+    public static string Lower(string s) => s.ToLower();
+
+    internal static List<Type> FunctionSources { get; } = [typeof(Builtins)];
+
+    public static void AddFunctionsClass(Type type)
     {
-        [Function("abs")]
-        public static double Abs(double d) => Math.Abs(d);
-
-        [Function("upper")]
-        public static string Upper(string s) => s.ToUpper();
-
-        [Function("lower")]
-        public static string Lower(string s) => s.ToLower();
-
-        internal static List<Type> FunctionSources { get; } = [typeof(Builtins)];
+        FunctionSources.Insert(0, type);
     }
 }
