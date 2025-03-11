@@ -1,51 +1,95 @@
 ﻿using System.Text;
 
-namespace PaleyExpressions
+namespace PaleyExpressions;
+
+internal class AstPrinter : Expr.IVisitor<string> 
 {
-    internal class AstPrinter : Expr.IVisitor<string> 
+    public string Print(Expr expr) => expr.Accept(this);
+
+    public string VisitBinaryExpr(Expr.Binary expr)
     {
-        public string Print(Expr expr) => expr.Accept(this);
+        return Parenthesize(expr.Operator.Lexeme, expr.Left, expr.Right);
+    }
 
-        public string VisitBinaryExpr(Expr.Binary expr)
+    public string VisitCallExpr(Expr.Call expr)
+    {
+        return Parenthesize2("fn", expr.Callee, expr.Arguments);
+    }
+
+    public string VisitVariableExpr(Expr.Variable expr)
+    {
+        return expr.Name.Lexeme;
+    }
+
+    public string VisitGroupingExpr(Expr.Grouping expr)
+    {
+        return Parenthesize("group", expr.Expression);
+    }
+
+    public string VisitLiteralExpr(Expr.Literal expr)
+    {
+        return expr.Value == null ? "nil" : expr.Value.ToString();
+    }
+
+    public string VisitLogicalExpr(Expr.Logical expr)
+    {
+        return Parenthesize(expr.Operator.Lexeme, expr.Left, expr.Right);
+    }
+
+    public string VisitUnaryExpr(Expr.Unary expr)
+    {
+        return Parenthesize(expr.Operator.Lexeme, expr.Right);
+    }
+
+    private string Parenthesize(string name, params Expr[] exprs)
+    {
+        var builder = new StringBuilder();
+
+        builder.Append('(').Append(name);
+
+        foreach (var expr in exprs)
         {
-            return Parenthesize(expr.Operator.Lexeme, expr.Left, expr.Right);
+            builder.Append(' ');
+            builder.Append(expr.Accept(this));
         }
+        builder.Append(')');
 
-        public string VisitGroupingExpr(Expr.Grouping expr)
+        return builder.ToString();
+    }
+
+    private string Parenthesize2(string name, params object?[] parts)
+    {
+        var builder = new StringBuilder();
+
+        builder.Append('(').Append(name);
+        Transform(builder, parts);
+        builder.Append(')');
+
+        return builder.ToString();
+    }
+
+    private void Transform(StringBuilder builder, params object?[] parts)
+    {
+        foreach (object? part in parts)
         {
-            return Parenthesize("group", expr.Expression);
-        }
+            builder.Append(' ');
 
-        public string VisitLiteralExpr(Expr.Literal expr)
-        {
-            if (expr.Value == null) return "nil";
-            return expr.Value.ToString();
-        }
-
-        //public string VisitLogicalExpr(Expr.Logical expr)
-        //{
-        //    return Parenthesize(expr.Operator.Lexeme, expr.Left, expr.Right);
-        //}
-
-        public string VisitUnaryExpr(Expr.Unary expr)
-        {
-            return Parenthesize(expr.Operator.Lexeme, expr.Right);
-        }
-
-        private string Parenthesize(string name, params Expr[] exprs)
-        {
-            var builder = new StringBuilder();
-
-            builder.Append("(").Append(name);
-
-            foreach (var expr in exprs)
+            if (part is Expr expr) 
             {
-                builder.Append(" ");
                 builder.Append(expr.Accept(this));
+            } 
+            else if (part is Token token) 
+            {
+                builder.Append(token.Lexeme);
             }
-            builder.Append(")");
-
-            return builder.ToString();
+            else if (part is List<Expr> list) 
+            {
+                Transform(builder, [.. list]);
+            }
+            else
+            {
+                builder.Append(part);
+            }
         }
     }
 }

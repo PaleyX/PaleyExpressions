@@ -1,65 +1,83 @@
-﻿namespace PaleyExpressions
+﻿using System.Reflection;
+
+namespace PaleyExpressions;
+
+internal abstract class Expr
 {
-    internal abstract class Expr
+    internal interface IVisitor<out T>
     {
-        internal interface IVisitor<R>
-        {
-            //R VisitAssignExpr(Assign expr);
-            R VisitBinaryExpr(Binary expr);
-            //R VisitCallExpr(Call expr);
-            //R VisitGetExpr(Get expr);
-            R VisitGroupingExpr(Grouping expr);
-            R VisitLiteralExpr(Literal expr);
-            //R VisitLogicalExpr(Logical expr);
-            //R VisitSetExpr(Set expr);
-            //R VisitSuperExpr(Super expr);
-            //R VisitThisExpr(This expr);
-            R VisitUnaryExpr(Unary expr);
-            //R VisitVariableExpr(Variable expr);
-        }
+        //R VisitAssignExpr(Assign expr);
+        T VisitBinaryExpr(Binary expr);
+        T VisitCallExpr(Call expr);
+        //R VisitGetExpr(Get expr);
+        T VisitGroupingExpr(Grouping expr);
+        T VisitLiteralExpr(Literal expr);
+        T VisitLogicalExpr(Logical expr);
+        //R VisitSetExpr(Set expr);
+        //R VisitSuperExpr(Super expr);
+        //R VisitThisExpr(This expr);
+        T VisitUnaryExpr(Unary expr);
+        T VisitVariableExpr(Variable expr);
+    }
 
-        // Nested Expr classes here...
+    // Nested Expr classes here...
 
-        internal abstract R Accept<R>(IVisitor<R> visitor);
+    internal abstract T Accept<T>(IVisitor<T> visitor);
 
-        internal class Binary(Expr left, Token op, Expr right) : Expr
-        {
-            internal Expr Left { get; } = left;
-            internal Token Operator { get; } = op;
-            internal Expr Right { get; } = right;
+    internal class Binary(Expr left, Token op, Expr right) : Expr
+    {
+        internal Expr Left { get; } = left;
+        internal Token Operator { get; } = op;
+        internal Expr Right { get; } = right;
 
-            internal override R Accept<R>(IVisitor<R> visitor) => visitor.VisitBinaryExpr(this);
-        }
+        internal override T Accept<T>(IVisitor<T> visitor) => visitor.VisitBinaryExpr(this);
+    }
 
-        internal class Grouping(Expr expr) : Expr
-        {
-            internal Expr Expression { get; } = expr;
+    internal class Call(Expr callee, Token paren, List<Expr> arguments, MethodInfo function) : Expr
+    {
+        internal Expr Callee { get; } = callee;
+        internal Token Paren { get; } = paren;
+        internal List<Expr> Arguments { get; } = arguments;
+        internal MethodInfo Function { get; } = function;
 
-            internal override R Accept<R>(IVisitor<R> visitor) => visitor.VisitGroupingExpr(this);
-        }
+        internal override T Accept<T>(IVisitor<T> visitor) => visitor.VisitCallExpr(this);
+    }
 
-        internal class Literal(object? value) : Expr
-        {
-            internal object? Value { get; } = value;
+    internal class Grouping(Expr expr) : Expr
+    {
+        internal Expr Expression { get; } = expr;
 
-            internal override R Accept<R>(IVisitor<R> visitor) => visitor.VisitLiteralExpr(this);
-        }
+        internal override T Accept<T>(IVisitor<T> visitor) => visitor.VisitGroupingExpr(this);
+    }
 
-        //internal class Logical(Expr left, Token op, Expr right) : Expr
-        //{
-        //    internal Expr Left { get; } = left;
-        //    internal Token Operator { get; } = op;
-        //    internal Expr Right { get; } = right;
+    internal class Literal(object? value) : Expr
+    {
+        internal object? Value { get; } = value;
 
-        //    internal override R Accept<R>(IVisitor<R> visitor) => visitor.VisitLogicalExpr(this);
-        //}
+        internal override T Accept<T>(IVisitor<T> visitor) => visitor.VisitLiteralExpr(this);
+    }
 
-        internal class Unary(Token op, Expr right) : Expr
-        {
-            internal Token Operator { get; } = op;
-            internal Expr Right { get; } = right;
+    internal class Logical(Expr left, Token op, Expr right) : Expr
+    {
+        internal Expr Left { get; } = left;
+        internal Token Operator { get; } = op;
+        internal Expr Right { get; } = right;
 
-            internal override R Accept<R>(IVisitor<R> visitor) => visitor.VisitUnaryExpr(this);
-        }
+        internal override T Accept<T>(IVisitor<T> visitor) => visitor.VisitLogicalExpr(this);
+    }
+
+    internal class Unary(Token op, Expr right) : Expr
+    {
+        internal Token Operator { get; } = op;
+        internal Expr Right { get; } = right;
+
+        internal override T Accept<T>(IVisitor<T> visitor) => visitor.VisitUnaryExpr(this);
+    }
+
+    internal class Variable(Token name) : Expr
+    {
+        internal Token Name { get; } = name;
+
+        internal override T Accept<T>(IVisitor<T> visitor) => visitor.VisitVariableExpr(this);
     }
 }

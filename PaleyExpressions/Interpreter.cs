@@ -1,122 +1,184 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static PaleyExpressions.TokenType;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using static PaleyExpressions.TokenType;
 
-namespace PaleyExpressions
+namespace PaleyExpressions;
+
+internal class Interpreter(Dictionary<string, object?>? variables = null) : Expr.IVisitor<object?>
 {
-    internal class Interpreter : Expr.IVisitor<object?>
+    public object? Interpret(Expr expression)
     {
-        public object? Interpret(Expr expression)
+        var value = Evaluate(expression);
+        return value;
+    }
+
+    public object? VisitLiteralExpr(Expr.Literal expr)
+    {
+        return expr.Value;
+    }
+
+    public object? VisitLogicalExpr(Expr.Logical expr)
+    {
+        var left = Evaluate(expr.Left);
+
+        if (expr.Operator.TokenType == OR) 
         {
-            var value = Evaluate(expression);
+            if (IsTruthy(left)) return left;
+        } 
+        else
+        {
+            if (!IsTruthy(left)) return left;
+        }
+
+        return Evaluate(expr.Right);
+    }
+
+    public object? VisitGroupingExpr(Expr.Grouping expr)
+    {
+        return Evaluate(expr.Expression);
+    }
+
+    public object? VisitVariableExpr(Expr.Variable expr)
+    {
+        if (variables != null && variables.TryGetValue(expr.Name.Lexeme, out var value))
+        {
             return value;
         }
 
-        public object? VisitLiteralExpr(Expr.Literal expr)
+        throw new ScannerException($"Unknown variable '{expr.Name.Lexeme}'");
+    }
+
+    public object? VisitUnaryExpr(Expr.Unary expr)
+    {
+        var right = Evaluate(expr.Right);
+
+        switch (expr.Operator.TokenType) 
         {
-            return expr.Value;
+            case BANG:
+                return !IsTruthy(right);
+            case MINUS:
+                return -CheckNumberOperand(expr.Operator, right);
         }
 
-        public object? VisitGroupingExpr(Expr.Grouping expr)
-        {
-            return Evaluate(expr.Expression);
-        }
+        // Unreachable.
+        return null;
+    }
 
-        public object? VisitUnaryExpr(Expr.Unary expr)
-        {
-            var right = Evaluate(expr.Right);
+    public object? VisitBinaryExpr(Expr.Binary expr)
+    {
+        var left = Evaluate(expr.Left);
+        var right = Evaluate(expr.Right);
 
-            switch (expr.Operator.TokenType) 
+        switch (expr.Operator.TokenType)
+        {
+            case GREATER:
             {
-                case BANG:
-                    return !IsTruthy(right);
-                case MINUS:
-                    return -(double)right;
+                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                return lhs > rhs;
             }
+            case GREATER_EQUAL:
+            {
+                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                return lhs >= rhs;
+            }
+            case LESS:
+            {
+                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                return lhs < rhs;
+            }
+            case LESS_EQUAL:
+            {
+                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                return lhs <= rhs;
+            }
+            case MINUS:
+            {
+                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                return lhs - rhs;
+            }
+            case BANG_EQUAL:
+                return !IsEqual(left, right);
+            case EQUAL_EQUAL:
+                return IsEqual(left, right);
+            case PLUS:
+                if (left is double d1 && right is double d2)
+                {
+                    return d1 + d2;
+                }
 
-            // Unreachable.
-            return null;
+                if (left is string s1 && right is string s2)
+                {
+                    return s1 + s2;
+                }
+
+                throw ScannerException.TokenMessage(expr.Operator, "Operands must be two numbers or two strings");
+            case SLASH:
+            {
+                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                return lhs / rhs;
+            }
+            case STAR:
+            {
+                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                return lhs * rhs;
+            }
         }
+        // Unreachable.
+        return null;
+    }
 
-        public object? VisitBinaryExpr(Expr.Binary expr)
+    public object VisitCallExpr(Expr.Call expr)
+    {
+        var args = expr.Arguments.Select(Evaluate);
+
+        return expr.Function.Invoke(null, [.. args]);
+    }
+
+    private object? Evaluate(Expr expr)
+    {
+        return expr.Accept(this);
+    }
+
+    private static bool IsTruthy(object? obj)
+    {
+        if (obj == null)
         {
-            var left = Evaluate(expr.Left);
-            var right = Evaluate(expr.Right);
-
-            switch (expr.Operator.TokenType) 
-            {
-                case GREATER:
-                    return (double)left > (double)right;
-                case GREATER_EQUAL:
-                    return (double)left >= (double)right;
-                case LESS:
-                    return (double)left < (double)right;
-                case LESS_EQUAL:
-                    return (double)left <= (double)right;
-                case MINUS:
-                    return (double)left - (double)right;
-                case BANG_EQUAL: 
-                    return !IsEqual(left, right);
-                case EQUAL_EQUAL: 
-                    return IsEqual(left, right);
-                case PLUS:
-                    if (left is double d1 && right is double d2) 
-                    {
-                        return d1 + d2;
-                    }
-
-                    if (left is string s1 && right is string s2) 
-                    {
-                        return s1 + s2;
-                    }
-                    break;
-                case SLASH:
-                    return (double)left / (double)right;
-                case STAR:
-                    return (double)left * (double)right;
-            }
-
-            // Unreachable.
-            return null;
+            return false;
         }
 
-        private object? Evaluate(Expr expr)
+        if (obj is bool value)
         {
-            return expr.Accept(this);
+            return value;
         }
 
-        private static bool IsTruthy(object? obj)
+        return true;
+    }
+
+    private static bool IsEqual(object? a, object? b)
+    {
+        return a switch
         {
-            if (obj == null)
-            {
-                return false;
-            }
+            null when b == null => true,
+            null => false,
+            _ => a.Equals(b)
+        };
+    }
 
-            if (obj is bool value)
-            {
-                return value;
-            }
-
-            return true;
-        }
-
-        private static bool IsEqual(object? a, object? b)
+    private static double CheckNumberOperand(Token token, object? operand)
+    {
+        if (operand is double d)
         {
-            if (a == null && b == null)
-            {
-                return true;
-            }
-
-            if (a == null)
-            {
-                return false;
-            }
-
-            return a.Equals(b);
+            return d;
         }
+
+        throw ScannerException.TokenMessage(token, "Operand must be a number");
+    }
+
+    private static (double lhs, double rhs) CheckNumberOperands(Token token, object? left, object? right)
+    {
+        if(left is double d1 && right is double d2)
+        {
+            return (d1, d2);
+        }
+
+        throw ScannerException.TokenMessage(token, "Operands must be numbers");
     }
 }

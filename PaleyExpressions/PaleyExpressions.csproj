@@ -4,6 +4,11 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+	<PackageId>PaleyExpressions</PackageId>
+	<Version>0.0.1-local</Version>
+	<Authors>Jonathan Palethorpe</Authors>
+	<Description>An expression evaluator</Description>
   </PropertyGroup>
 
 </Project>
