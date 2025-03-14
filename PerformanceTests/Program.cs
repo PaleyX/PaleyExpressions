@@ -8,7 +8,7 @@ public class PreliminaryTest
 {
     private Expr _expression = null!;
 
-    [Params("abs(-1)", "10+10")]
+    [Params("abs(-1)", "10+10", "iif(1>2,10,20)")]
     public string Code = null!;
 
     [GlobalSetup]

@@ -12,6 +12,12 @@ public static class Builtins
     [Function("lower")]
     public static string Lower(string s) => s.ToLower();
 
+    [Function("iif")]
+    public static object? Iif(bool condition, Func<object?> ifTrue, Func<object?> ifFalse)
+    {
+        return condition ? ifTrue() : ifFalse();
+    }
+
     internal static List<Type> FunctionSources { get; } = [typeof(Builtins)];
 
     public static void AddFunctionsClass(Type type)

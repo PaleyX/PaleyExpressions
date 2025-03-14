@@ -1,4 +1,5 @@
-﻿using static PaleyExpressions.TokenType;
+﻿using System.Diagnostics;
+using static PaleyExpressions.TokenType;
 
 namespace PaleyExpressions;
 
@@ -127,15 +128,22 @@ internal class Interpreter(Dictionary<string, object?>? variables = null) : Expr
 
     public object VisitCallExpr(Expr.Call expr)
     {
-        var args = expr.Arguments.Select(Evaluate);
+        var args = new List<object?>();
+        var parameters = expr.Function.GetParameters();
 
-        return expr.Function.Invoke(null, [.. args]);
+        foreach(var item in expr.Arguments.Select((value, index) => (value, index)))
+        {
+            Debug.Assert(expr.Arguments.Count == expr.Function.GetParameters().Length);
+
+            args.Add(parameters[item.index].ParameterType == typeof(Func<object?>)
+                ? () => Evaluate(item.value)
+                : Evaluate(item.value));
+        }
+
+        return expr.Function.Invoke(null, [.. args])!;
     }
 
-    private object? Evaluate(Expr expr)
-    {
-        return expr.Accept(this);
-    }
+    private object? Evaluate(Expr expr) => expr.Accept(this);
 
     private static bool IsTruthy(object? obj)
     {
