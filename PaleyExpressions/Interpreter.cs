@@ -131,10 +131,10 @@ internal class Interpreter(Dictionary<string, object?>? variables = null) : Expr
         var args = new List<object?>();
         var parameters = expr.Function.GetParameters();
 
+        Debug.Assert(expr.Arguments.Count == expr.Function.GetParameters().Length);
+
         foreach(var item in expr.Arguments.Select((value, index) => (value, index)))
         {
-            Debug.Assert(expr.Arguments.Count == expr.Function.GetParameters().Length);
-
             args.Add(parameters[item.index].ParameterType == typeof(Func<object?>)
                 ? () => Evaluate(item.value)
                 : Evaluate(item.value));
