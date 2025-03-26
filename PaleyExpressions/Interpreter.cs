@@ -5,7 +5,7 @@ namespace PaleyExpressions;
 
 internal class Interpreter(Dictionary<string, object?>? variables = null) : Expr.IVisitor<object?>
 {
-    public object? Interpret(Expr expression)
+    public object? Interpret(Expr expression) 
     {
         var value = Evaluate(expression);
         return value;

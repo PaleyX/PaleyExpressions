@@ -1,11 +1,13 @@
 ﻿//#define USEPROOF
 
+using System.Diagnostics;
 using System.Linq.Expressions;
+using System.Reflection;
 using static PaleyExpressions.TokenType;
 
 namespace PaleyExpressions;
 
-internal class ExpressionBuilder(Dictionary<string, object?>? variables = null) : Expr.IVisitor<Expression>
+internal class ExpressionBuilder : Expr.IVisitor<Expression>
 {
     private readonly Dictionary<string, ParameterExpression> _parameters = new();
 
@@ -22,43 +24,58 @@ internal class ExpressionBuilder(Dictionary<string, object?>? variables = null) 
         switch (expr.Operator.TokenType)
         {
             case GREATER:
-                CheckNumberOperands(expr.Operator, lhs, rhs);
-                return Expression.GreaterThan(lhs, rhs);
+            {
+                var convert = Conversions<double>(lhs, rhs);
+                return Expression.GreaterThan(convert.lhc, convert.rhc);
+            }
             case GREATER_EQUAL:
-                CheckNumberOperands(expr.Operator, lhs, rhs);
-                return Expression.GreaterThanOrEqual(lhs, rhs);
+            {
+                var convert = Conversions<double>(lhs, rhs);
+                return Expression.GreaterThanOrEqual(convert.lhc, convert.rhc);
+            }
             case LESS:
-                CheckNumberOperands(expr.Operator, lhs, rhs);
-                return Expression.LessThan(lhs, rhs);
+            {
+                var convert = Conversions<double>(lhs, rhs);
+                return Expression.LessThan(convert.lhc, convert.rhc);
+            }
             case LESS_EQUAL:
-                CheckNumberOperands(expr.Operator, lhs, rhs);
-                return Expression.LessThanOrEqual(lhs, rhs);
+            {
+                var convert = Conversions<double>(lhs, rhs);
+                return Expression.LessThanOrEqual(convert.lhc, convert.rhc);
+            }
             case MINUS:
-                CheckNumberOperands(expr.Operator, lhs, rhs);
-                return Expression.Subtract(lhs, rhs);
+            {
+                var convert = Conversions<double>(lhs, rhs);
+                return Expression.Subtract(convert.lhc, convert.rhc);
+            }
             case BANG_EQUAL:
-                return Expression.NotEqual(lhs, rhs);
+            {
+                var equals = typeof(object).GetMethod("Equals", [typeof(object), typeof(object)]);
+                var convert = Conversions<object>(lhs, rhs);
+                return Expression.Not(Expression.Call(equals!, [convert.lhc, convert.rhc]));
+            }
             case EQUAL_EQUAL:
-                return Expression.Equal(lhs, rhs);
+            {
+                var equals = typeof(object).GetMethod("Equals", [typeof(object), typeof(object)]);
+                var convert = Conversions<object>(lhs, rhs);
+                return Expression.Call(equals!, [convert.lhc, convert.rhc]);
+            }
             case PLUS:
-                if (lhs.Type == typeof(double) && rhs.Type == typeof(double))
-                {
-                    return Expression.Add(lhs, rhs);
-                }
-
-                if (lhs.Type == typeof(string) && rhs.Type == typeof(string))
-                {
-                    return Expression.Add(lhs, rhs, typeof(string).GetMethod("Concat", [typeof(string), typeof(string)]));
-                }
-
-                throw ScannerException.TokenMessage(expr.Operator, "Operands must be two numbers or two strings");
+            {
+                var plus = typeof(Helpers).GetMethod("Plus", BindingFlags.NonPublic | BindingFlags.Static);
+                var convert = Conversions<object>(lhs, rhs);
+                return Expression.Call(plus!, [convert.lhc, convert.rhc]);
+            }
             case SLASH:
-                CheckNumberOperands(expr.Operator, lhs, rhs);
-                return Expression.Divide(lhs, rhs);
+            {
+                var convert = Conversions<double>(lhs, rhs);
+                return Expression.Divide(convert.lhc, convert.rhc);
+            }
             case STAR:
-                CheckNumberOperands(expr.Operator, lhs, rhs);
-                return Expression.Multiply(lhs, rhs);
-
+            {
+                var convert = Conversions<double>(lhs, rhs);
+                return Expression.Multiply(convert.lhc, convert.rhc);
+            }
         }
 
         throw new ScannerException("Shouldn't be able to get here");
@@ -136,40 +153,65 @@ internal class ExpressionBuilder(Dictionary<string, object?>? variables = null) 
 
     public Expression VisitVariableExpr(Expr.Variable expr)
     {
-        if (variables != null && variables.TryGetValue(expr.Name.Lexeme, out var value))
-        {
+        // can be turned into a simple Contains
+        //if (variables != null && variables.TryGetValue(expr.Name.Lexeme, out var value))
+        //{
             if (_parameters.TryGetValue(expr.Name.Lexeme, out var p))
             {
                 return p;
             }
 
-            var type = value switch
-            {
-                string => typeof(string),
-                double => typeof(double),
-                bool => typeof(bool),
-                _ => throw new ScannerException($"Unsupported variable type: '{expr.Name.Lexeme}'")
-            };
+            //var type = value switch
+            //{
+            //    string => typeof(string),
+            //    double => typeof(double),
+            //    bool => typeof(bool),
+            //    _ => throw new ScannerException($"Unsupported variable type: '{expr.Name.Lexeme}'")
+            //};
 
-            var parameter = Expression.Parameter(type, expr.Name.Lexeme);
+            var parameter = Expression.Parameter(typeof(object), expr.Name.Lexeme);
 
             _parameters.Add(expr.Name.Lexeme, parameter);
 
             return parameter;
-        }
+        //}
 
-        throw new ScannerException($"Unknown variable '{expr.Name.Lexeme}'");
+        //throw new ScannerException($"Unknown variable '{expr.Name.Lexeme}'");
     }
 
     public List<ParameterExpression> GetParameters() => _parameters.Values.ToList();
 
-    private static void CheckNumberOperands(Token token, Expression left, Expression right)
+    //private static void CheckNumberOperands(Token token, Expression left, Expression right)
+    //{
+    //    if (left.Type == typeof(double) && right.Type == typeof(double))
+    //    {
+    //        return;
+    //    }
+
+    //    throw ScannerException.TokenMessage(token, "Operands must be numbers");
+    //}
+
+    private static (Expression lhc, Expression rhc) Conversions<T>(Expression lhs, Expression rhs)
     {
-        if (left.Type == typeof(double) && right.Type == typeof(double))
+        return (Expression.Convert(lhs, typeof(T)), 
+                Expression.Convert(rhs, typeof(T)));
+    }
+}
+
+internal static class Helpers
+{
+    internal static object Plus(object lhs, object rhs)
+    {
+        if (lhs is double d1 && rhs is double d2)
         {
-            return;
+            return d1 + d2;
         }
 
-        throw ScannerException.TokenMessage(token, "Operands must be numbers");
+        if (lhs is string s1 && rhs is string s2)
+        {
+            return s1 + s2;
+        }
+
+        throw new ScannerException("Operands must be two numbers or two strings");
     }
 }
