@@ -8,11 +8,16 @@ public static class Runner
     {
         try
         {
-            var expression = Parse(source, functions);
+            var astRunner = new AstRunner(source, functions);
+            astRunner.GetAst();
+
+            //var expression = Parse(source, functions);
 
             //Console.WriteLine(new AstPrinter().Print(expression));
 
-            var result = new Interpreter(variables).Interpret(expression);
+            //var result = new Interpreter().Interpret(expression, variables);
+
+            var result = astRunner.Interpret(variables);
 
             return result;
         }

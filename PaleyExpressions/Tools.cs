@@ -32,9 +32,27 @@ internal static class Tools
             throw new ScannerException("Callable function '{name}' cannot be generic");
         }
 
-        if (function.GetParameters().Length != args.Count())
+        var isParams = function.GetParameters().LastOrDefault()?.IsDefined(typeof(ParamArrayAttribute), false) ?? false;
+
+        if (isParams)
         {
-            throw new ScannerException($"Function '{name}' expected {function.GetParameters().Length} argument(s) but got {args.Count()}");
+            var paramType = function.GetParameters().LastOrDefault().ParameterType.GetElementType();
+            if (!(paramType == typeof(object) || paramType == typeof(Func<object>)))
+            {
+                throw new ScannerException($"{function.Name}: params type must be object or Func<object>");
+            }
+
+            if (args.Count() < function.GetParameters().Length - 1)
+            {
+                throw new ScannerException($"Function '{name}': argument count mismatch");
+            }
+        }
+        else
+        {
+            if (function.GetParameters().Length != args.Count())
+            {
+                throw new ScannerException($"Function '{name}' expected {function.GetParameters().Length} argument(s) but got {args.Count()}");
+            }
         }
 
         return function;

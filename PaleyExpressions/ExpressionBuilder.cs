@@ -75,6 +75,11 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
                 var (lhc, rhc) = Conversions<double>(lhs, rhs);
                 return Expression.Multiply(lhc, rhc);
             }
+            case MOD:
+            {
+                var (lhc, rhc) = Conversions<double>(lhs, rhs);
+                return Expression.Modulo(lhc, rhc);
+            }
         }
 
         throw new ScannerException("Shouldn't be able to get here");

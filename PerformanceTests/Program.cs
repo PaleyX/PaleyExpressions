@@ -39,7 +39,7 @@ public class PreliminaryTest
     public object? AstFromScratch() => Runner.RunAst(Code, _variables);
 
     [Benchmark]
-    public object? AstPreCompiled() => new Interpreter(_variables).Interpret(_expression);
+    public object? AstPreCompiled() => new Interpreter().Interpret(_expression, _variables);
 
     [Benchmark]
     public object? ExprFromScratch() => Runner.RunExpression(Code, _variables);

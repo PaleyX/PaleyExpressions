@@ -86,7 +86,7 @@ internal class Parser(List<Token> tokens, Type? functions = null)
     {
         var expr = Unary();
 
-        while (Match(SLASH, STAR))
+        while (Match(SLASH, STAR, MOD))
         {
             var op = Previous();
             var right = Unary();
