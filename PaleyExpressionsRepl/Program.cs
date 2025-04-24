@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Diagnostics;
+using System.Text.RegularExpressions;
 using PaleyExpressionsRepl;
 
 Dictionary<string, object?> _variables = new();
@@ -31,8 +32,7 @@ for (;;)
     }
     catch (Exception e)
     {
-        Console.WriteLine(e);
-        throw;
+        Console.WriteLine(e.Message);
     }
 }
 
@@ -61,8 +61,13 @@ bool IsValidIdentifier(string name)
 }
 
 object? ProcessExpression(string expression)
-{
-    return PaleyExpressions.Runner.Run(expression, _variables, typeof(Functions));
+{  
+    var ast = PaleyExpressions.Runner.RunAst(expression, _variables, typeof(Functions));
+    var expr = PaleyExpressions.Runner.RunExpression(expression, _variables, typeof(Functions));
+
+    Debug.Assert((ast == null && expr == null) || ast!.Equals(expr));
+
+    return ast;
 }
 partial class Program
 {

@@ -17,4 +17,10 @@ public static class Functions
 
         return new string(chars);
     }
+
+    [Function("format")]
+    public static string Format(string format, params object?[] args)
+    {
+        return string.Format(format, args);
+    }
 }

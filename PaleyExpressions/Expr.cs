@@ -6,16 +6,11 @@ internal abstract class Expr
 {
     internal interface IVisitor<out T>
     {
-        //R VisitAssignExpr(Assign expr);
         T VisitBinaryExpr(Binary expr);
         T VisitCallExpr(Call expr);
-        //R VisitGetExpr(Get expr);
         T VisitGroupingExpr(Grouping expr);
         T VisitLiteralExpr(Literal expr);
         T VisitLogicalExpr(Logical expr);
-        //R VisitSetExpr(Set expr);
-        //R VisitSuperExpr(Super expr);
-        //R VisitThisExpr(This expr);
         T VisitUnaryExpr(Unary expr);
         T VisitVariableExpr(Variable expr);
     }

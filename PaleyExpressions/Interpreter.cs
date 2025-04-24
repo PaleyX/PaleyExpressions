@@ -1,11 +1,17 @@
-﻿using static PaleyExpressions.TokenType;
+﻿using System.Diagnostics;
+using System.Threading.Tasks.Sources;
+using static PaleyExpressions.TokenType;
 
 namespace PaleyExpressions;
 
-internal class Interpreter(Dictionary<string, object?>? variables = null) : Expr.IVisitor<object?>
+internal class Interpreter() : Expr.IVisitor<object?>
 {
-    public object? Interpret(Expr expression)
+    private Dictionary<string, object?>? _variables;
+
+    public object? Interpret(Expr expression, Dictionary<string, object?>? variables) 
     {
+        _variables = variables;
+
         var value = Evaluate(expression);
         return value;
     }
@@ -38,7 +44,7 @@ internal class Interpreter(Dictionary<string, object?>? variables = null) : Expr
 
     public object? VisitVariableExpr(Expr.Variable expr)
     {
-        if (variables != null && variables.TryGetValue(expr.Name.Lexeme, out var value))
+        if (_variables != null && _variables.TryGetValue(expr.Name.Lexeme, out var value))
         {
             return value;
         }
@@ -120,6 +126,11 @@ internal class Interpreter(Dictionary<string, object?>? variables = null) : Expr
                 var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
                 return lhs * rhs;
             }
+            case MOD:
+            {
+                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                return lhs % rhs;
+            }
         }
         // Unreachable.
         return null;
@@ -127,15 +138,58 @@ internal class Interpreter(Dictionary<string, object?>? variables = null) : Expr
 
     public object VisitCallExpr(Expr.Call expr)
     {
-        var args = expr.Arguments.Select(Evaluate);
+        var args = new List<object?>();
+        var parameters = expr.Function.GetParameters();
 
-        return expr.Function.Invoke(null, [.. args]);
+        var last = parameters.LastOrDefault();
+        var paramsAdded = false;
+
+        foreach (var item in expr.Arguments.Select((value, index) => (value, index)))
+        {
+            var parameter = parameters[item.index];
+
+            var isParams = parameter.IsDefined(typeof(ParamArrayAttribute), false);
+
+            if(isParams)
+            {
+                paramsAdded = true;
+
+                var paramType = parameter.ParameterType.GetElementType();
+
+                var array = Array.CreateInstance(paramType, expr.Arguments.Count - item.index);
+                for (int i = item.index; i < expr.Arguments.Count; i++)
+                {
+                    array.SetValue(GetParameter(paramType, expr.Arguments[i]), i - item.index);
+                }
+                args.Add(array);
+                break;
+            }
+
+            args.Add(GetParameter(parameter.ParameterType, item.value));
+        }
+
+        // if function has a params but the call doesnt have any, add an empty array
+        if (last != null && last.IsDefined(typeof(ParamArrayAttribute), false))
+        {
+            if (!paramsAdded)
+            {
+                var paramType = last.ParameterType.GetElementType();
+                var array = Array.CreateInstance(paramType, 0);
+                args.Add(array);
+            }
+        }
+
+        return expr.Function.Invoke(null, [.. args])!;
+
+        object? GetParameter(Type parameterType, Expr value)
+        {
+            return parameterType == typeof(Func<object?>)
+                ? () => Evaluate(value)
+                : Evaluate(value);
+        }
     }
 
-    private object? Evaluate(Expr expr)
-    {
-        return expr.Accept(this);
-    }
+    private object? Evaluate(Expr expr) => expr.Accept(this);
 
     private static bool IsTruthy(object? obj)
     {

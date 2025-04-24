@@ -52,6 +52,7 @@ internal class Scanner(string source)
             case ';': AddToken(SEMICOLON); break;
             case '*': AddToken(STAR); break;
             case '/': AddToken(SLASH); break;
+            case '%': AddToken(MOD); break;
             case '!':
                 AddToken(Match('=') ? BANG_EQUAL : BANG);
                 break;
