@@ -1,4 +1,5 @@
-﻿using static PaleyExpressions.TokenType;
+﻿using System.Runtime.CompilerServices;
+using static PaleyExpressions.TokenType;
 
 namespace PaleyExpressions;
 
@@ -28,13 +29,53 @@ internal class Parser(List<Token> tokens, Type? functions = null)
 
     private Expr And()
     {
-        var expr = Equality();
+        var expr = BitwiseOr();
 
         while (Match(AND))
         {
             var op = Previous();
             var right = Equality();
             expr = new Expr.Logical(expr, op, right);
+        }
+
+        return expr;
+    }
+
+    private Expr BitwiseOr()
+    {
+        var expr = BitwiseXor();
+        while (Match(BITWISE_OR))
+        {
+            var op = Previous();
+            var right = BitwiseXor();
+            expr = new Expr.Binary(expr, op, right);
+        }
+        return expr;
+    }
+
+    private Expr BitwiseXor()
+    {
+        var expr = BitwiseAnd();
+
+        while(Match(BITWISE_XOR))
+        {
+            var op = Previous();
+            var right = BitwiseAnd();
+            expr = new Expr.Binary(expr, op, right);
+        }
+
+        return expr;
+    }
+
+    private Expr BitwiseAnd()
+    {
+        var expr = Equality();
+
+        while(Match(BITWISE_AND))
+        {
+            var op = Previous();
+            var right = Equality();
+            expr = new Expr.Binary(expr, op, right);
         }
 
         return expr;
@@ -56,9 +97,23 @@ internal class Parser(List<Token> tokens, Type? functions = null)
 
     private Expr Comparison()
     {
-        var expr = Term();
+        var expr = Shift();
 
         while (Match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL))
+        {
+            var op = Previous();
+            var right = Term();
+            expr = new Expr.Binary(expr, op, right);
+        }
+
+        return expr;
+    }
+
+    private Expr Shift()
+    {
+        var expr = Term();
+
+        while(Match(LEFT_SHIFT, RIGHT_SHIFT))
         {
             var op = Previous();
             var right = Term();
