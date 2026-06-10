@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Threading.Tasks.Sources;
-using static PaleyExpressions.TokenType;
+﻿using static PaleyExpressions.TokenType;
 
 namespace PaleyExpressions;
 
@@ -56,16 +54,13 @@ internal class Interpreter() : Expr.IVisitor<object?>
     {
         var right = Evaluate(expr.Right);
 
-        switch (expr.Operator.TokenType) 
+        return expr.Operator.TokenType switch
         {
-            case BANG:
-                return !IsTruthy(right);
-            case MINUS:
-                return -CheckNumberOperand(expr.Operator, right);
-        }
-
-        // Unreachable.
-        return null;
+            BANG => !IsTruthy(right),
+            MINUS => -CheckNumberOperand(expr.Operator, right),
+            // Unreachable.
+            _ => null
+        };
     }
 
     public object? VisitBinaryExpr(Expr.Binary expr)
@@ -105,17 +100,11 @@ internal class Interpreter() : Expr.IVisitor<object?>
             case EQUAL_EQUAL:
                 return IsEqual(left, right);
             case PLUS:
-                if (left is double d1 && right is double d2)
-                {
-                    return d1 + d2;
-                }
-
-                if (left is string s1 && right is string s2)
-                {
-                    return s1 + s2;
-                }
-
-                throw ScannerException.TokenMessage(expr.Operator, "Operands must be two numbers or two strings");
+                return Helpers.Plus(left, right);
+            case LEFT_SHIFT:
+                return Helpers.LeftShift(left, right);
+            case RIGHT_SHIFT:
+                return Helpers.RightShift(left, right);
             case SLASH:
             {
                 var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
@@ -131,9 +120,20 @@ internal class Interpreter() : Expr.IVisitor<object?>
                 var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
                 return lhs % rhs;
             }
+            case BITWISE_AND:
+            {
+                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                return (double)((uint)lhs & (uint)rhs);
+            }
+            case BITWISE_OR:
+            {
+                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                return (double)((uint)lhs | (uint)rhs);
+            }
         }
+        
         // Unreachable.
-        return null;
+        throw ScannerException.TokenMessage(expr.Operator, "Unknown token");
     }
 
     public object VisitCallExpr(Expr.Call expr)
@@ -193,17 +193,12 @@ internal class Interpreter() : Expr.IVisitor<object?>
 
     private static bool IsTruthy(object? obj)
     {
-        if (obj == null)
+        return obj switch
         {
-            return false;
-        }
-
-        if (obj is bool value)
-        {
-            return value;
-        }
-
-        return true;
+            null => false,
+            bool value => value,
+            _ => true
+        };
     }
 
     private static bool IsEqual(object? a, object? b)

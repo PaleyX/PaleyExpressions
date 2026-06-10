@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
 	<PackageId>PaleyExpressions</PackageId>
-	<Version>0.0.5-local</Version>
+	<Version>0.0.6-local</Version> <!-- 09/06/26-->
 	<Authors>Jonathan Palethorpe</Authors>
 	<Description>An expression evaluator</Description>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>

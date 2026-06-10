@@ -1,0 +1,3 @@
+
+typing 1!
+Gives 1 - ie. the ! is ignored

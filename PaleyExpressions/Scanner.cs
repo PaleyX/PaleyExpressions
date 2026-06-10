@@ -53,6 +53,8 @@ internal class Scanner(string source)
             case '*': AddToken(STAR); break;
             case '/': AddToken(SLASH); break;
             case '%': AddToken(MOD); break;
+            case '&': AddToken(BITWISE_AND); break;
+            case '|': AddToken(BITWISE_OR); break;
             case '!':
                 AddToken(Match('=') ? BANG_EQUAL : BANG);
                 break;
@@ -60,10 +62,12 @@ internal class Scanner(string source)
                 AddToken(Match('=') ? EQUAL_EQUAL : EQUAL);
                 break;
             case '<':
-                AddToken(Match('=') ? LESS_EQUAL : LESS);
+                AddToken(Match('=') ? LESS_EQUAL : 
+                         Match('<') ? LEFT_SHIFT : LESS);
                 break;
             case '>':
-                AddToken(Match('=') ? GREATER_EQUAL : GREATER);
+                AddToken(Match('=') ? GREATER_EQUAL : 
+                         Match('>') ? RIGHT_SHIFT : GREATER);
                 break;
             case ' ':
             case '\r':

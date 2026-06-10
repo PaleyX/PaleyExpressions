@@ -65,6 +65,24 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
                 var (lhc, rhc) = Conversions<object>(lhs, rhs);
                 return Expression.Call(plus!, [lhc, rhc]);
             }
+            case LEFT_SHIFT:
+            case RIGHT_SHIFT:
+            {
+                var proc = expr.Operator.TokenType == LEFT_SHIFT ? "LeftShift" : "RightShift";
+                var shift = typeof(Helpers).GetMethod(proc, BindingFlags.NonPublic | BindingFlags.Static);
+                var (lhc, rhc) = Conversions<object>(lhs, rhs);
+                return Expression.Call(shift!, [lhc, rhc]);
+            }
+            case BITWISE_AND:
+            {
+                var (lhc, rhc) = Conversions<uint>(lhs, rhs);
+                return Expression.Convert(Expression.And(lhc, rhc), typeof(double));
+            }
+            case BITWISE_OR:
+            {
+                var (lhc, rhc) = Conversions<uint>(lhs, rhs);
+                return Expression.Convert(Expression.Or(lhc, rhc), typeof(double));
+            }
             case SLASH:
             {
                 var (lhc, rhc) = Conversions<double>(lhs, rhs);
@@ -159,7 +177,12 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
         var lhs = Build(expr.Left);
         var rhs = Build(expr.Right);
 
-        return Expression.Or(lhs, rhs);
+        return expr.Operator.TokenType switch
+        {
+            AND => Expression.AndAlso(lhs, rhs),
+            OR => Expression.OrElse(lhs, rhs),
+            _ => throw new ScannerException("Logical operator not and/or")
+        };
     }
 
     public Expression VisitUnaryExpr(Expr.Unary expr)
@@ -197,15 +220,3 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
     }
 }
 
-internal static class Helpers
-{
-    internal static object Plus(object lhs, object rhs)
-    {
-        return lhs switch
-        {
-            double d1 when rhs is double d2 => d1 + d2,
-            string s1 when rhs is string s2 => s1 + s2,
-            _ => throw new ScannerException("Operands must be two numbers or two strings")
-        };
-    }
-}

@@ -41,7 +41,7 @@ return;
 void ProcessVariable(string command)
 {
     var pos = command.IndexOf(' ');
-    var name = command.Substring(1, pos - 1);
+    var name = command[1..pos];
     var expression = command[(pos + 1)..];
 
     if (!IsValidIdentifier(name))
@@ -61,7 +61,7 @@ bool IsValidIdentifier(string name)
 }
 
 object? ProcessExpression(string expression)
-{  
+{
     var ast = PaleyExpressions.Runner.RunAst(expression, _variables, typeof(Functions));
     var expr = PaleyExpressions.Runner.RunExpression(expression, _variables, typeof(Functions));
 
