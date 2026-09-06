@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
 
 	<PackageId>PaleyExpressions</PackageId>
-	<Version>0.0.13-local</Version> <!-- 06/09/26-->
+	<Version>0.0.14-Pre</Version> <!-- 06/09/26-->
 	<Authors>Jonathan Palethorpe</Authors>
 	<Description>An expression evaluator</Description>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -14,10 +14,26 @@
 
 	<PropertyGroup>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageTags>expressions;</PackageTags>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<Title>PaleyExpressions</Title>
+		<Copyright>(c) Jonathan Palethorpe</Copyright>
+		<PackageIcon>assets\icon-64.png</PackageIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<None Include="README.md" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="assets\icon-64.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	  <None Update="LICENSE.txt">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
 	</ItemGroup>
 
 </Project>

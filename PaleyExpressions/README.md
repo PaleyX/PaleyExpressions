@@ -1,6 +1,6 @@
 # PaleyExpressions
 
-![PaleyExpressions icon](./icon.svg)
+![PaleyExpressions icon](./assets/icon-64.png)
 
 A lightweight expression parser and evaluator for .NET (net10.0). PaleyExpressions parses mathematical, logical and string expressions, supports variables, and lets you register static function classes via a small attribute-based API.
 
