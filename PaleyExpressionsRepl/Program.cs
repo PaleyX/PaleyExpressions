@@ -1,10 +1,11 @@
 ﻿using System.Diagnostics;
 using System.Text.RegularExpressions;
+using PaleyExpressions.Runners;
 using PaleyExpressionsRepl;
 
 Dictionary<string, object?> _variables = new();
 
-for (;;)
+while(true)
 {
     try
     {
@@ -55,15 +56,15 @@ void ProcessVariable(string command)
     _variables[name] = result;
 }
 
-bool IsValidIdentifier(string name)
+static bool IsValidIdentifier(string name)
 {
     return IdentifierRegex().IsMatch(name);
 }
 
 object? ProcessExpression(string expression)
 {
-    var ast = PaleyExpressions.Runner.RunAst(expression, _variables, typeof(Functions));
-    var expr = PaleyExpressions.Runner.RunExpression(expression, _variables, typeof(Functions));
+    var ast = new AstRunner(expression, typeof(Functions)).Interpret(_variables);
+    var expr = new ExpressionRunner(expression, typeof(Functions)).Interpret(_variables);
 
     Debug.Assert((ast == null && expr == null) || ast!.Equals(expr));
 

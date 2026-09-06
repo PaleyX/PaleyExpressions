@@ -14,7 +14,7 @@ internal class Scanner(string source)
         { "false",  FALSE },
         { "nil",    NIL },
         { "or",     OR },
-        { "true",   TRUE },
+        { "true",   TRUE }
     };
 
     internal List<Token> ScanTokens()
@@ -43,13 +43,13 @@ internal class Scanner(string source)
         {
             case '(': AddToken(LEFT_PAREN); break;
             case ')': AddToken(RIGHT_PAREN); break;
-            case '{': AddToken(LEFT_BRACE); break;
-            case '}': AddToken(RIGHT_BRACE); break;
+            //case '{': AddToken(LEFT_BRACE); break;
+            //case '}': AddToken(RIGHT_BRACE); break;
             case ',': AddToken(COMMA); break;
-            case '.': AddToken(DOT); break;
+            //case '.': AddToken(DOT); break;
             case '-': AddToken(MINUS); break;
             case '+': AddToken(PLUS); break;
-            case ';': AddToken(SEMICOLON); break;
+            //case ';': AddToken(SEMICOLON); break;
             case '*': AddToken(STAR); break;
             case '/': AddToken(SLASH); break;
             case '%': AddToken(MOD); break;
@@ -86,7 +86,7 @@ internal class Scanner(string source)
                 }
                 else
                 {
-                    throw new ScannerException($"Unexpected character: '{c}'");
+                    throw new ExpressionException($"Unexpected character: '{c}'");
                 }
                 break;
         }
@@ -94,17 +94,17 @@ internal class Scanner(string source)
 
     private void ScanString () 
     {
-        while (Peek() != '"' && !IsAtEnd()) 
+        while (Peek() != '"' && !IsAtEnd())
         {
             Advance();
         }
 
         if (IsAtEnd())
         {
-            throw new ScannerException("Unterminated string.");
+            throw new ExpressionException("Unterminated string.");
         }
 
-        // The closing ".
+        // The closing double quote.
         Advance();
 
         // Trim the surrounding quotes.

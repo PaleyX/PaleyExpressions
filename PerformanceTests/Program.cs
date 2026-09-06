@@ -1,15 +1,15 @@
-﻿using System.Linq.Expressions;
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using PaleyExpressions;
+using PaleyExpressions.Runners;
 
 namespace PerformanceTests;
 
 public class PreliminaryTest
 {
     private Expr _expression = null!;
-    private Delegate _compiled = null!;
-    private List<object?> _args = null!;
+    private ExpressionRunner _expressionRunner = null!;
+    private AstRunner _astRunner = null!;
 
     private readonly Dictionary<string, object?> _variables = new()
     {
@@ -18,7 +18,7 @@ public class PreliminaryTest
         { "c", 3.5d }
     };
 
-    [Params("abs(-1)", "10+10", "iif(1>2,10,20)", "a+b+c")]
+    [Params("abs(-1)", "10+10", "iif(1>2,10,20)", "a+b+c", "(1.4+3.5)/c", "a&b")]
     public string Code = null!;
 
     [GlobalSetup]
@@ -28,30 +28,28 @@ public class PreliminaryTest
         var parser = new Parser(tokens);
         _expression = parser.Parse();
 
-        var builder = new ExpressionBuilder();
-        var built = builder.Build(_expression);
-        _compiled = Expression.Lambda(built, builder.GetParameters()).Compile();
-
-        _args = Runner.GetExpressionArgs(builder.GetParameters().Select(static p => p.Name), _variables);
+        _expressionRunner = new ExpressionRunner(Code);
+        _astRunner = new AstRunner(Code);
     }
 
-    [Benchmark(Baseline = true)]
-    public object? AstFromScratch() => Runner.RunAst(Code, _variables);
+    //[Benchmark(Baseline = true)]
+    //public object? AstFromScratch() => Runner.RunAst(Code, _variables);
+
+    [Benchmark(Baseline=true)]
+    public object? AstPreCompiled() => _astRunner.Interpret(_variables);
+
+    //[Benchmark]
+    //public object? ExprFromScratch() => Runner.RunExpression(Code, _variables);
 
     [Benchmark]
-    public object? AstPreCompiled() => new Interpreter().Interpret(_expression, _variables);
+    public object? ExprPreCompiled() => _expressionRunner.Interpret(_variables);
 
-    [Benchmark]
-    public object? ExprFromScratch() => Runner.RunExpression(Code, _variables);
-
-    [Benchmark]
-    public object? ExprPreCompiled() => _compiled.DynamicInvoke([.. _args]);
 }
 
 internal class Program
 {
     public static void Main(string[] args)
     {
-        var summary = BenchmarkRunner.Run<PreliminaryTest>();
+        BenchmarkRunner.Run<PreliminaryTest>();
     }
 }

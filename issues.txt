@@ -1,3 +1,2 @@
 
-typing 1!
-Gives 1 - ie. the ! is ignored
+typing 1! Gives 1 - ie. the ! is ignored - now fixed (02/09/26)
