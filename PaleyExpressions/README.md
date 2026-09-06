@@ -57,9 +57,11 @@ Building and packaging
 - Run tests: dotnet test
 - Create NuGet package: dotnet pack (project is configured to include README.md)
 
+
 Contributing
 - Contributions are welcome. Open issues or pull requests on the repository. Keep changes focused and add tests for new behavior.
 
 License
-- No license file detected in this repository. Add a LICENSE to declare terms for reuse.
+- This project is licensed under the MIT License. See LICENSE.txt for details.
+- Copyright (c) 2026 Jonathan Palethorpe
 

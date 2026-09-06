@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+	<id>PaleyExpressions</id>
+	<version>0.0.13-local</version>
+	<authors>Jonathan Palethorpe</authors>
+	<owners>Jonathan Palethorpe</owners>
+	<requireLicenseAcceptance>false</requireLicenseAcceptance>
+	<license type="file">LICENSE.txt</license>
+	<description>An expression evaluator for .NET 10. Parses and evaluates mathematical, logical and string expressions. Supports variables, builtin and custom functions via an attribute-based API.</description>
+	<summary>Lightweight expression parser and evaluator for .NET.</summary>
+	<projectUrl>https://github.com/PaleyX/PaleyExpressions</projectUrl>
+	<tags>expressions parser evaluator interpreter math string</tags>
+	<repository type="git" url="https://github.com/PaleyX/PaleyExpressions" branch="0.0.14" />
+	<releaseNotes>Local build</releaseNotes>
+  </metadata>
+  <files>
+	<!-- Include compiled assemblies (pack before running nuget pack or adjust paths to your build output) -->
+	<file src="PaleyExpressions\bin\Release\net10.0\*.dll" target="lib/net10.0" />
+	<!-- Include README and license so they are available inside the .nupkg -->
+	<file src="PaleyExpressions\README.md" target="" />
+	<file src="PaleyExpressions\LICENSE.txt" target="" />
+  </files>
+</package>
