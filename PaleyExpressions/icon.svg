@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+	<linearGradient id="g" x1="0" x2="1">
+	  <stop offset="0" stop-color="#4b6cb7"/>
+	  <stop offset="1" stop-color="#182848"/>
+	</linearGradient>
+  </defs>
+  <rect rx="36" ry="36" width="256" height="256" fill="url(#g)"/>
+  <circle cx="128" cy="96" r="58" fill="rgba(255,255,255,0.06)"/>
+  <text x="128" y="154" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="88" fill="#ffffff" text-anchor="middle" font-weight="700">PE</text>
+  <text x="128" y="188" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#ffffff" text-anchor="middle">Expressions</text>
+</svg>

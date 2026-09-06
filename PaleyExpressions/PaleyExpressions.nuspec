@@ -7,6 +7,7 @@
 	<owners>Jonathan Palethorpe</owners>
 	<requireLicenseAcceptance>false</requireLicenseAcceptance>
 	<license type="file">LICENSE.txt</license>
+	<icon>icon.svg</icon>
 	<description>An expression evaluator for .NET 10. Parses and evaluates mathematical, logical and string expressions. Supports variables, builtin and custom functions via an attribute-based API.</description>
 	<summary>Lightweight expression parser and evaluator for .NET.</summary>
 	<projectUrl>https://github.com/PaleyX/PaleyExpressions</projectUrl>
@@ -20,5 +21,6 @@
 	<!-- Include README and license so they are available inside the .nupkg -->
 	<file src="PaleyExpressions\README.md" target="" />
 	<file src="PaleyExpressions\LICENSE.txt" target="" />
+	<file src="PaleyExpressions\icon.svg" target="" />
   </files>
 </package>
