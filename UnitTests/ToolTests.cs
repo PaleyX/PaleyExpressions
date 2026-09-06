@@ -1,5 +1,7 @@
 ﻿using FluentAssertions;
 using PaleyExpressions;
+using PaleyExpressions.Visitors;
+using System.Linq.Expressions;
 
 namespace UnitTests;
 
@@ -14,7 +16,7 @@ public class ToolTests
     [Fact]
     public void TooFewArgumentsThrowsCorrectly()
     {
-        var ex = Assert.Throws<ScannerException>(() => Tools.GetFunction("f1", []));
+        var ex = Assert.Throws<ExpressionException>(() => Tools.GetFunction("f1", []));
 
         Assert.Equal("Function 'f1': argument count mismatch", ex.Message);
     }
@@ -34,8 +36,17 @@ public class ToolTests
 
         var expr = new Expr.Call(null!, null!, args, func);
 
-        var interpreter = new Interpreter();
+        // interpreter
+        var interpreter = new AstInterpreter();
         var result = interpreter.VisitCallExpr(expr);
+        result.Should().Be("First");
+
+        // Expressions tree
+        var builder = new ExpressionBuilder();
+        var built = builder.VisitCallExpr(expr);
+        var compiled = Expression.Lambda(built, builder.GetParameters()).Compile();
+        //result = compiled.DynamicInvoke([.. args]);
+        result = compiled.DynamicInvoke();
 
         result.Should().Be("First");
     }
@@ -50,14 +61,21 @@ public class ToolTests
 
         var expr = new Expr.Call(null!, null!, [], func);
 
-        var interpreter = new Interpreter();
+        // Interpreter
+        var interpreter = new AstInterpreter();
         var result = interpreter.VisitCallExpr(expr);
+        result.Should().Be("");
 
+        // Expressions tree
+        var builder = new ExpressionBuilder();
+        var built = builder.VisitCallExpr(expr);
+        var compiled = Expression.Lambda(built, builder.GetParameters()).Compile();
+        result = compiled.DynamicInvoke(null);
         result.Should().Be("");
     }
 }
 
-public class ToolsTestsFunctions
+public static class ToolsTestsFunctions
 {
     [Function("f1")]
     public static string F1(string text, params Func<object>[] args)

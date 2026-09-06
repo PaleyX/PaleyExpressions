@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using static PaleyExpressions.TokenType;
+﻿using static PaleyExpressions.TokenType;
 
 namespace PaleyExpressions;
 
@@ -9,7 +8,17 @@ internal class Parser(List<Token> tokens, Type? functions = null)
     private List<Token> Tokens { get; } = tokens;
     private Type? Functions { get; } = functions;
 
-    internal Expr Parse() => Expression();
+    internal Expr Parse()
+    {
+        var expr = Expression();
+
+        if (!IsAtEnd())
+        {
+            throw ExpressionException.TokenMessage(Peek(), "Unexpected token");
+        }
+
+        return expr;
+    }
 
     private Expr Expression() => Or();
 
@@ -205,7 +214,7 @@ internal class Parser(List<Token> tokens, Type? functions = null)
             return new Expr.Grouping(expr);
         }
 
-        throw ScannerException.TokenMessage(Peek(), "Expect expression");
+        throw ExpressionException.TokenMessage(Peek(), "Expect expression");
     }
 
     private Token Consume(TokenType type, string message)
@@ -215,7 +224,7 @@ internal class Parser(List<Token> tokens, Type? functions = null)
             return Advance();
         }
 
-        throw ScannerException.TokenMessage(Peek(), message);
+        throw ExpressionException.TokenMessage(Peek(), message);
     }
 
     private bool Match(params TokenType[] types)
@@ -274,7 +283,7 @@ internal class Parser(List<Token> tokens, Type? functions = null)
 
         if (callee is not Expr.Variable variable)
         {
-            throw new ScannerException("Empty function name");
+            throw new ExpressionException("Empty function name");
         }
 
         if (Functions != null)

@@ -1,8 +1,8 @@
 ﻿using static PaleyExpressions.TokenType;
 
-namespace PaleyExpressions;
+namespace PaleyExpressions.Visitors;
 
-internal class Interpreter() : Expr.IVisitor<object?>
+internal class AstInterpreter : Expr.IVisitor<object?>
 {
     private Dictionary<string, object?>? _variables;
 
@@ -47,7 +47,7 @@ internal class Interpreter() : Expr.IVisitor<object?>
             return value;
         }
 
-        throw new ScannerException($"Unknown variable '{expr.Name.Lexeme}'");
+        throw new ExpressionException($"Unknown variable '{expr.Name.Lexeme}'");
     }
 
     public object? VisitUnaryExpr(Expr.Unary expr)
@@ -133,7 +133,7 @@ internal class Interpreter() : Expr.IVisitor<object?>
         }
         
         // Unreachable.
-        throw ScannerException.TokenMessage(expr.Operator, "Unknown token");
+        throw ExpressionException.TokenMessage(expr.Operator, "Unknown token");
     }
 
     public object VisitCallExpr(Expr.Call expr)
@@ -168,7 +168,8 @@ internal class Interpreter() : Expr.IVisitor<object?>
             args.Add(GetParameter(parameter.ParameterType, item.value));
         }
 
-        // if function has a params but the call doesnt have any, add an empty array
+        // if function has a params but the call doesnt have any parameters,
+        // add an empty array
         if (last != null && last.IsDefined(typeof(ParamArrayAttribute), false))
         {
             if (!paramsAdded)
@@ -218,7 +219,7 @@ internal class Interpreter() : Expr.IVisitor<object?>
             return d;
         }
 
-        throw ScannerException.TokenMessage(token, "Operand must be a number");
+        throw ExpressionException.TokenMessage(token, "Operand must be a number");
     }
 
     private static (double lhs, double rhs) CheckNumberOperands(Token token, object? left, object? right)
@@ -228,6 +229,6 @@ internal class Interpreter() : Expr.IVisitor<object?>
             return (d1, d2);
         }
 
-        throw ScannerException.TokenMessage(token, "Operands must be numbers");
+        throw ExpressionException.TokenMessage(token, "Operands must be numbers");
     }
 }

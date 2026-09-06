@@ -19,17 +19,17 @@ internal static class Tools
 
         if (function == null)
         {
-            throw new ScannerException($"Unknown function '{name}'");
+            throw new ExpressionException($"Unknown function '{name}'");
         }
 
         if (!function.IsStatic)
         {
-            throw new ScannerException("Callable function '{name}' must be static");
+            throw new ExpressionException("Callable function '{name}' must be static");
         }
 
         if (function.IsGenericMethod)
         {
-            throw new ScannerException("Callable function '{name}' cannot be generic");
+            throw new ExpressionException("Callable function '{name}' cannot be generic");
         }
 
         var isParams = function.GetParameters().LastOrDefault()?.IsDefined(typeof(ParamArrayAttribute), false) ?? false;
@@ -39,19 +39,19 @@ internal static class Tools
             var paramType = function.GetParameters().LastOrDefault().ParameterType.GetElementType();
             if (!(paramType == typeof(object) || paramType == typeof(Func<object>)))
             {
-                throw new ScannerException($"{function.Name}: params type must be object or Func<object>");
+                throw new ExpressionException($"{function.Name}: params type must be object or Func<object>");
             }
 
             if (args.Count() < function.GetParameters().Length - 1)
             {
-                throw new ScannerException($"Function '{name}': argument count mismatch");
+                throw new ExpressionException($"Function '{name}': argument count mismatch");
             }
         }
         else
         {
             if (function.GetParameters().Length != args.Count())
             {
-                throw new ScannerException($"Function '{name}' expected {function.GetParameters().Length} argument(s) but got {args.Count()}");
+                throw new ExpressionException($"Function '{name}' expected {function.GetParameters().Length} argument(s) but got {args.Count()}");
             }
         }
 

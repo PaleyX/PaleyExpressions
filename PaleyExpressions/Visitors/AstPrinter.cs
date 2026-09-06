@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace PaleyExpressions;
+namespace PaleyExpressions.Visitors;
 
 internal class AstPrinter : Expr.IVisitor<string> 
 {
@@ -70,25 +70,24 @@ internal class AstPrinter : Expr.IVisitor<string>
 
     private void Transform(StringBuilder builder, params object?[] parts)
     {
-        foreach (object? part in parts)
+        foreach (var part in parts)
         {
             builder.Append(' ');
 
-            if (part is Expr expr) 
+            switch (part)
             {
-                builder.Append(expr.Accept(this));
-            } 
-            else if (part is Token token) 
-            {
-                builder.Append(token.Lexeme);
-            }
-            else if (part is List<Expr> list) 
-            {
-                Transform(builder, [.. list]);
-            }
-            else
-            {
-                builder.Append(part);
+                case Expr expr:
+                    builder.Append(expr.Accept(this));
+                    break;
+                case Token token:
+                    builder.Append(token.Lexeme);
+                    break;
+                case List<Expr> list:
+                    Transform(builder, [.. list]);
+                    break;
+                default:
+                    builder.Append(part);
+                    break;
             }
         }
     }
