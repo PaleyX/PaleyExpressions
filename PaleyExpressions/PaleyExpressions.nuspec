@@ -12,7 +12,7 @@
 	<summary>Lightweight expression parser and evaluator for .NET.</summary>
 	<projectUrl>https://github.com/PaleyX/PaleyExpressions</projectUrl>
 	<tags>expressions parser evaluator interpreter math string</tags>
-	<repository type="git" url="https://github.com/PaleyX/PaleyExpressions" branch="0.0.14" />
+	<repository type="git" url="https://github.com/PaleyX/PaleyExpressions" branch="0.0.15" />
 	<releaseNotes>Local build</releaseNotes>
   </metadata>
   <files>
