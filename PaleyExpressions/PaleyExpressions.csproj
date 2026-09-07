@@ -33,6 +33,7 @@
 	  <None Update="LICENSE.txt">
 	    <Pack>True</Pack>
 	    <PackagePath>\</PackagePath>
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
 	</ItemGroup>
 
