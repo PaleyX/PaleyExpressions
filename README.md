@@ -98,7 +98,7 @@ Operators
 |>|greater than comparison|	5 > 3|	true|
 |<=|less than or equal comparison|5 \<= 3|	false|
 |>=|greater than or equal comparison|5 >= 3|	true|
-|and|logical AND|	true and false|	false|
+|and|logical AND|true and false|	false|
 |or|logical OR|	true or false|	true|
 |!|	logical NOT|!true|	false|
 |&|	bitwise AND|5 & 3|1|
@@ -106,7 +106,21 @@ Operators
 
 Buit-in Functions
 -----------------
+- `abs(numeric expression)` 
 
+   returns the absolute value of a number
+- `upper(string expression)`
+
+   returns the uppercase version of a string
+- `lower(string expression)`
+
+   returns the lowercase version of a string
+- `iif(predicate expression, expression 1, expression 2)`
+
+   returns expression 1 if predicate is true, otherwise returns expression 2
+- `cond(predicate expression, expression ...)`
+
+   takes 1..n pairs of predicate/value arguments and returns the value corresponding to the first predicate that evaluates to true. If no predicates are true, returns null.
 
 Links
 -----
