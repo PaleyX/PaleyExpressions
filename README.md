@@ -76,7 +76,37 @@ Types
 - strings
 - booleans 
 
-Refer to the package documentation and XML docs included in the package for the complete API and examples.
+Operators
+---------
+|Operator|Explanation|Example|Result|
+|:---|:---|:---|:---|
+|+|	numeric addition|	5 + 3|	8|
+|+|	string concatenation|	"Hello, " + "World!"|	"Hello, World!"|
+|-|	numeric subtraction|	5 - 3|	2|
+|-|	unary minus|	-5|	-5|
+|*|	numeric multiplication|	5 * 3|	15|
+|/|	numeric division|	5 / 3|	1.67|
+|%|	modulus (remainder)|	5 % 3|	2|
+|( )|	grouping operator|	(5 + 3) * 2|	16|
+|<<|left shift (number)|	5 << 2|	20|
+|>>|right shift (number)|	5 >> 2|	1|
+|<<|left shift (string)|	"Hello" << 1|	"ello"|
+|>>|right shift (string)|	"Hello" >> 1|	"Hell"|
+|==|equality comparison|	5 == 3|	false|
+|!=|inequality comparison|	5 != 3|	true|
+|<|less than comparison|5 < 3|	false|
+|>|greater than comparison|	5 > 3|	true|
+|<=|less than or equal comparison|5 \<= 3|	false|
+|>=|greater than or equal comparison|5 >= 3|	true|
+|and|logical AND|	true and false|	false|
+|or|logical OR|	true or false|	true|
+|!|	logical NOT|!true|	false|
+|&|	bitwise AND|5 & 3|1|
+|\||bitwise OR|	5 \| 3|	7|
+
+Buit-in Functions
+-----------------
+
 
 Links
 -----
