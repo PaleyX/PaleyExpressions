@@ -2,7 +2,7 @@
 
 [![NuGet Version](https://img.shields.io/nuget/v/PaleyExpressions.svg)](https://www.nuget.org/packages/PaleyExpressions/)
 
-PaleyExpressions is a .NET library distributed as a NuGet package. It contains helpers and utilities for evaluating expressions in .NET applications.
+PaleyExpressions is a .NET library distributed as a NuGet package. It contains helpers and utilities for evaluating runtime supplied expressions in .NET applications.
 
 ## Table of contents
 - [Package](#package)
@@ -33,7 +33,7 @@ Usage
 -----
 
 After installing the package, add a reference and import the package namespace in your C# files.
-PaleExpressions has 2 ways to evaluate expressions:
+PaleyExpressions has 2 ways to evaluate expressions:
 
 - AstRunner - this walks the abstract syntax tree (AST) of the expression and interprets it. 
 - ExpressionRunner - this compiles the expression into a Microsoft Expression Tree delegate for faster execution.
@@ -45,7 +45,8 @@ Subsequent calls to Interpret will use the cached AST or Expression Tree for fas
 ```csharp
 using PaleyExpressions.Runners;
 
-var vars = new Dictionary<string, object?> { ["x"] = 10 };
+// Note: numeric variables are always C# double, so 10 is 10d
+var vars = new Dictionary<string, object?> { ["x"] = 10d };
 
 // Interpret using the AST-based interpreter
 var ast = new AstRunner("x + 2");
@@ -138,7 +139,7 @@ Built-in Functions
 
 Examples
 --------
-Note: whitespace between token within an expression is ignored
+Note: whitespace between tokens within an expression is ignored
 
 - `10*(1+2.9)` 
 - `lower("Hello" + " " + "World!")`
