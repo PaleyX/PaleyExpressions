@@ -18,7 +18,7 @@ public class PreliminaryTest
         { "c", 3.5d }
     };
 
-    [Params("abs(-1)", "10+10", "iif(1>2,10,20)", "a+b+c", "(1.4+3.5)/c", "a&b")]
+    [Params("abs(-1)", "10+10", "iif(1>2,upper(\"hello\"),upper(\"world\"))", "a+b+c", "(1.4+3.5)/c", "a&b")]
     public string Code = null!;
 
     [GlobalSetup]

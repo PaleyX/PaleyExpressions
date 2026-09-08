@@ -106,6 +106,21 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
         var args = new List<Expression>();
         var parameters = expr.Function.GetParameters();
 
+        // Special-case the Builtins.Iif to emit a conditional expression instead of
+        // creating delegate thunks for lazy branches. This preserves lazy semantics
+        // while avoiding delegate allocation and invocation overhead 
+        if (expr.Function.DeclaringType == typeof(Builtins) && expr.Function.Name == nameof(Builtins.Iif))
+        {
+            if (expr.Arguments.Count != 3)
+                throw new ExpressionException("iif requires exactly three arguments");
+
+            var test = Expression.Convert(Build(expr.Arguments[0]), typeof(bool));
+            var ifTrue = Expression.Convert(Build(expr.Arguments[1]), typeof(object));
+            var ifFalse = Expression.Convert(Build(expr.Arguments[2]), typeof(object));
+
+            return Expression.Condition(test, ifTrue, ifFalse);
+        }
+
         var last = parameters.LastOrDefault();
         var paramsAdded = false;
 

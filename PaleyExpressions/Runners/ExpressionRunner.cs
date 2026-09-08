@@ -50,7 +50,7 @@ public class ExpressionRunner(string source, Type? functions = null) : IRunner
 
     private object?[] _args = [];
 
-    private object?[] GetExpressionArgs(IReadOnlyList<ParameterExpression> parameters, Dictionary<string, object?>? variables)
+    private object?[] GetExpressionArgs(IReadOnlyList<ParameterExpression> parameters, IReadOnlyDictionary<string, object?>? variables)
     {
         if (parameters.Count == 0)
         {

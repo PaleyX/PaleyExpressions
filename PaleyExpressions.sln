@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		issues.txt = issues.txt
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpeedTest", "SpeedTest\SpeedTest.csproj", "{02D7BC68-9D9D-4471-A533-ECD7129A8FF7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{4B988C50-6F6D-40DB-A895-341BFC15BBEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B988C50-6F6D-40DB-A895-341BFC15BBEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B988C50-6F6D-40DB-A895-341BFC15BBEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02D7BC68-9D9D-4471-A533-ECD7129A8FF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02D7BC68-9D9D-4471-A533-ECD7129A8FF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02D7BC68-9D9D-4471-A533-ECD7129A8FF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02D7BC68-9D9D-4471-A533-ECD7129A8FF7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

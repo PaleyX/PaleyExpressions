@@ -69,11 +69,11 @@ using PaleyExpressions;
 
 public static class Functions
 {
-	[Function("reverse")]
-	public static string? Reverse(string? text) => /* ... */ null;
+    [Function("reverse")]
+    public static string? Reverse(string? text) => /* ... */ null;
 
-	[Function("format")]
-	public static string Format(string fmt, params object?[] args) => string.Format(fmt, args);
+    [Function("format")]
+    public static string Format(string fmt, params object?[] args) => string.Format(fmt, args);
 }
 ```
 
