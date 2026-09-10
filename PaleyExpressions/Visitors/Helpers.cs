@@ -1,7 +1,34 @@
-﻿namespace PaleyExpressions.Visitors;
+﻿using System.Linq.Expressions;
+using System.Reflection;
+
+namespace PaleyExpressions.Visitors;
 
 internal static class Helpers
 {
+    internal static Expression GetPlus(Expression lhs, Expression rhs)
+    {
+        if (TryFoldable<double>(lhs, rhs, out var folds))
+        {
+            return Expression.Constant(folds.lhs + folds.rhs, typeof(double));
+        }
+
+        if (lhs.Type == typeof(double) && rhs.Type == typeof(double))
+        {
+            return Expression.Add(lhs, rhs);
+        }
+
+        if (lhs.Type == typeof(string) && rhs.Type == typeof(string))
+        {
+            var concat = typeof(string).GetMethod("Concat", [typeof(string), typeof(string)]);
+            return Expression.Call(concat!, lhs, rhs);
+        }
+
+        // Fallback for Parameter etc.
+        var plus = typeof(Helpers).GetMethod("Plus", BindingFlags.NonPublic | BindingFlags.Static);
+        var (lhc, rhc) = Conversions<object>(lhs, rhs);
+        return Expression.Call(plus!, lhc, rhc);
+    }
+
     internal static object Plus(object? lhs, object? rhs)
     {
         return lhs switch
@@ -30,5 +57,55 @@ internal static class Helpers
             string s1 when rhs is double d3 => s1[..^(int)d3],
             _ => throw new ExpressionException("Operands must be 2 numbers or a string and a number")
         };
+    }
+
+    internal static (Expression lhc, Expression rhc) Conversions<T>(Expression lhs, Expression rhs)
+    {
+        // if we are converting to uint and lhs or rhs are Parameters,
+        // we need to convert the parameters to double first,
+        // then convert to uint. This is because the parameters are of type object,
+        // and we cannot convert directly from object to uint.
+        if (typeof(T) == typeof(uint))
+        {
+            if (lhs.NodeType == ExpressionType.Parameter)
+            {
+                lhs = Expression.Convert(lhs, typeof(double));
+            }
+
+            if (rhs.NodeType == ExpressionType.Parameter)
+            {
+                rhs = Expression.Convert(rhs, typeof(double));
+            }
+        }
+
+        if (lhs.Type != typeof(T))
+        {
+            lhs = Expression.Convert(lhs, typeof(T));
+        }
+
+        if (rhs.Type != typeof(T))
+        {
+            rhs = Expression.Convert(rhs, typeof(T));
+        }
+
+        return (lhs, rhs);
+    }
+
+    internal static bool TryFoldable<T>(Expression lhs, Expression rhs, out (T lhs, T rhs) result)
+    {
+        if (lhs.Type == typeof(T) &&
+            rhs.Type == typeof(T) &&
+            lhs.NodeType == ExpressionType.Constant &&
+            rhs.NodeType == ExpressionType.Constant)
+        {
+            var lhsValue = (T)((ConstantExpression)lhs).Value!;
+            var rhsValue = (T)((ConstantExpression)rhs).Value!;
+
+            result = (lhsValue, rhsValue);
+            return true;
+        }
+
+        result = (default!, default!);
+        return false;
     }
 }

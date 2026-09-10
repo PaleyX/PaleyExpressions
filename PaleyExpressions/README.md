@@ -132,7 +132,9 @@ Built-in Functions
    returns the lowercase version of a string
 - `iif(predicate expression, expression 1, expression 2)`
 
-   returns expression 1 if predicate is true, otherwise returns expression 2
+   returns expression 1 if predicate is true, otherwise returns expression 2.
+   This function is special cased in the ExpressionRunner to build an Expression.Condition 
+   instead of a MethodCallExpression for better performance.
 - `cond(predicate expression, expression ...)`
 
    takes 1..n pairs of predicate/value arguments and returns the value corresponding to the first predicate that evaluates to true. If no predicates are true, returns null.
@@ -152,6 +154,9 @@ Links
 
 - NuGet package: https://www.nuget.org/packages/PaleyExpressions/
 - Source repository: https://github.com/PaleyX/PaleyExpressions
+- Crafting Interpreters: https://craftinginterpreters.com/
+
+  Some of the code in this library is based on the book "Crafting Interpreters" by Bob Nystrom. The book is an excellent resource for learning how to build interpreters and compilers.
 
 Contributing
 ------------

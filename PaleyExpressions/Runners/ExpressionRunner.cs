@@ -4,6 +4,11 @@ using PaleyExpressions.Visitors;
 
 namespace PaleyExpressions.Runners;
 
+/// <summary>
+/// A runner that compiles an expression into a delegate and invokes it with the provided variables.
+/// </summary>
+/// <param name="source"></param>
+/// <param name="functions"></param>
 public class ExpressionRunner(string source, Type? functions = null) : IRunner
 {
     private Func<object?[], object?>? _invoker;

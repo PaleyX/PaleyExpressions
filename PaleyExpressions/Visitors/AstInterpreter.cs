@@ -168,7 +168,7 @@ internal class AstInterpreter : Expr.IVisitor<object?>
             args.Add(GetParameter(parameter.ParameterType, item.value));
         }
 
-        // if function has a params but the call doesnt have any parameters,
+        // if function has a params but the call doesn't have any parameters,
         // add an empty array
         if (last != null && last.IsDefined(typeof(ParamArrayAttribute), false))
         {

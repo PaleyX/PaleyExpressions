@@ -22,78 +22,92 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
         {
             case GREATER:
             {
-                var (lhc, rhc) = Conversions<double>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
                 return Expression.GreaterThan(lhc, rhc);
             }
             case GREATER_EQUAL:
             {
-                var (lhc, rhc) = Conversions<double>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
                 return Expression.GreaterThanOrEqual(lhc, rhc);
             }
             case LESS:
             {
-                var (lhc, rhc) = Conversions<double>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
                 return Expression.LessThan(lhc, rhc);
             }
             case LESS_EQUAL:
             {
-                var (lhc, rhc) = Conversions<double>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
                 return Expression.LessThanOrEqual(lhc, rhc);
             }
             case MINUS:
             {
-                var (lhc, rhc) = Conversions<double>(lhs, rhs);
+                if (Helpers.TryFoldable<double>(lhs, rhs, out var folds))
+                {
+                    return Expression.Constant(folds.lhs - folds.rhs, typeof(double));
+                }
+                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
                 return Expression.Subtract(lhc, rhc);
             }
             case BANG_EQUAL:
             {
                 var equals = typeof(object).GetMethod("Equals", [typeof(object), typeof(object)]);
-                var (lhc, rhc) = Conversions<object>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<object>(lhs, rhs);
                 return Expression.Not(Expression.Call(equals!, lhc, rhc));
             }
             case EQUAL_EQUAL:
             {
                 var equals = typeof(object).GetMethod("Equals", [typeof(object), typeof(object)]);
-                var (lhc, rhc) = Conversions<object>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<object>(lhs, rhs);
                 return Expression.Call(equals!, lhc, rhc);
             }
             case PLUS:
             {
-                var plus = typeof(Helpers).GetMethod("Plus", BindingFlags.NonPublic | BindingFlags.Static);
-                var (lhc, rhc) = Conversions<object>(lhs, rhs);
-                return Expression.Call(plus!, lhc, rhc);
+                return Helpers.GetPlus(lhs, rhs);
             }
             case LEFT_SHIFT:
             case RIGHT_SHIFT:
             {
                 var proc = expr.Operator.TokenType == LEFT_SHIFT ? "LeftShift" : "RightShift";
                 var shift = typeof(Helpers).GetMethod(proc, BindingFlags.NonPublic | BindingFlags.Static);
-                var (lhc, rhc) = Conversions<object>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<object>(lhs, rhs);
                 return Expression.Call(shift!, lhc, rhc);
             }
             case BITWISE_AND:
             {
-                var (lhc, rhc) = Conversions<uint>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<uint>(lhs, rhs);
                 return Expression.Convert(Expression.And(lhc, rhc), typeof(double));
             }
             case BITWISE_OR:
             {
-                var (lhc, rhc) = Conversions<uint>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<uint>(lhs, rhs);
                 return Expression.Convert(Expression.Or(lhc, rhc), typeof(double));
             }
             case SLASH:
             {
-                var (lhc, rhc) = Conversions<double>(lhs, rhs);
+                if (Helpers.TryFoldable<double>(lhs, rhs, out var folds))
+                {
+                    return Expression.Constant(folds.lhs / folds.rhs, typeof(double));
+                }
+                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
                 return Expression.Divide(lhc, rhc);
             }
             case STAR:
             {
-                var (lhc, rhc) = Conversions<double>(lhs, rhs);
+                if (Helpers.TryFoldable<double>(lhs, rhs, out var folds))
+                {
+                    return Expression.Constant(folds.lhs * folds.rhs, typeof(double));
+                }
+                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
                 return Expression.Multiply(lhc, rhc);
             }
             case MOD:
             {
-                var (lhc, rhc) = Conversions<double>(lhs, rhs);
+                if (Helpers.TryFoldable<double>(lhs, rhs, out var folds))
+                {
+                    return Expression.Constant(folds.lhs % folds.rhs, typeof(double));
+                }
+                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
                 return Expression.Modulo(lhc, rhc);
             }
         }
@@ -144,7 +158,7 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
             args.Add(GetParameter(parameter.ParameterType, Build(item.value)));
         }
 
-        // if function has a params but the call doesnt have any parameters,
+        // if function has a params but the call doesn't have any parameters,
         // add an empty array
         if (last != null && last.IsDefined(typeof(ParamArrayAttribute), false))
         {
@@ -223,28 +237,5 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
     }
 
     public List<ParameterExpression> GetParameters() => [.. _parameters.Values];
-
-    private static (Expression lhc, Expression rhc) Conversions<T>(Expression lhs, Expression rhs)
-    {
-        // if we are converting to uint and lhs or rhs are Parameters,
-        // we need to convert the parameters to double first,
-        // then convert to uint. This is because the parameters are of type object,
-        // and we cannot convert directly from object to uint.
-        if (typeof(T) == typeof(uint))
-        {
-            if (lhs.NodeType == ExpressionType.Parameter)
-            {
-                lhs = Expression.Convert(lhs, typeof(double));
-            }
-
-            if(rhs.NodeType == ExpressionType.Parameter)
-            {
-                rhs = Expression.Convert(rhs, typeof(double));
-            }
-        }
-
-        return (Expression.Convert(lhs, typeof(T)), 
-                Expression.Convert(rhs, typeof(T)));
-    }
 }
 

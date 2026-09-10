@@ -23,7 +23,10 @@ public class ArbitraryExpressionsTests
         { "pi", Math.PI },
         { "s", "Hello" },
         { "bt", true },
-        { "bf", false }
+        { "bf", false },
+        { "s1", "A"},
+        { "s2", "B"},
+        { "s3", "C"}
     };
 
     [Theory]
@@ -58,6 +61,9 @@ public class ArbitraryExpressionsTests
     [InlineData("bt or bf", true)]
     [InlineData("bt", true)]
     [InlineData("bf", false)]
+    [InlineData("\"Hello\" + \"World\"", "HelloWorld")]
+    [InlineData("s1 + s2", "AB")]
+    [InlineData("s1 + s2 + s3", "ABC")]
     public void ArbitraryExpressions(string expression, object? expected)
     {
         var astResult = new AstRunner(expression).Interpret(_variables);
@@ -152,5 +158,35 @@ public class ArbitraryExpressionsTests
         Assert.Equal(astResult, expressionsResult);
         Assert.Equal(expected, astResult);
         Assert.Equal(expected, expressionsResult);
+    }
+
+    [Fact]
+    public void VariableTypeChangesOnPlusWork()
+    {
+        Dictionary<string, object?> vars = new()
+        {
+            { "a", 10d },
+            { "b", 20d }
+        };
+
+        const string expression = "a+b";
+
+        var astRunner = new AstRunner(expression);
+        var expRunner = new ExpressionRunner(expression);
+
+        // numeric values
+        var result1 = astRunner.Interpret(vars);
+        var result2 = expRunner.Interpret(vars); 
+        Assert.Equal(30d, result1);
+        Assert.Equal(result1, result2);
+
+        // string values
+        vars["a"] = "hello";
+        vars["b"] = " world";
+
+        result1 = astRunner.Interpret(vars);
+        result2 = expRunner.Interpret(vars);
+        Assert.Equal("hello world", result1);
+        Assert.Equal(result1, result2);
     }
 }

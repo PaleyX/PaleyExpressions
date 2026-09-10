@@ -1,6 +1,7 @@
 ﻿using PaleyExpressions;
 using PaleyExpressions.Runners;
 using System.Diagnostics;
+using System.Globalization;
 
 // use this for running a profiler
 
@@ -31,5 +32,5 @@ Console.WriteLine($"Run Time: {stopWatch.Elapsed.TotalMilliseconds} ms");
 public static class Functions
 {
     [Function("tostr")]
-    public static string ToStr(double d) => Convert.ToString(d);
+    public static string ToStr(double d) => Convert.ToString(d, CultureInfo.CurrentCulture);
 }
