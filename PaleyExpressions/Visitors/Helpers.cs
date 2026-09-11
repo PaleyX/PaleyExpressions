@@ -69,26 +69,45 @@ internal static class Helpers
         {
             if (lhs.NodeType == ExpressionType.Parameter)
             {
-                lhs = Expression.Convert(lhs, typeof(double));
+                lhs = Convert<double>(lhs);
             }
 
             if (rhs.NodeType == ExpressionType.Parameter)
             {
-                rhs = Expression.Convert(rhs, typeof(double));
+                rhs = Convert<double>(rhs);
             }
         }
 
         if (lhs.Type != typeof(T))
         {
-            lhs = Expression.Convert(lhs, typeof(T));
+            lhs = Convert<T>(lhs);
         }
 
         if (rhs.Type != typeof(T))
         {
-            rhs = Expression.Convert(rhs, typeof(T));
+            rhs = Convert<T>(rhs);
         }
 
         return (lhs, rhs);
+    }
+
+    internal static Expression Convert<T>(Expression convert)
+    {
+        if(convert.Type == typeof(T))
+        {
+            return convert;
+        }
+
+        return Expression.Convert(convert, typeof(T));
+    }
+
+    internal static Expression Convert(Expression expression, Type targetType)
+    {
+        if (expression.Type == targetType)
+        {
+            return expression;
+        }
+        return Expression.Convert(expression, targetType);
     }
 
     internal static bool TryFoldable<T>(Expression lhs, Expression rhs, out (T lhs, T rhs) result)

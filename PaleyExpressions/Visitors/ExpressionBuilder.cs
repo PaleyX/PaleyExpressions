@@ -76,12 +76,12 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
             case BITWISE_AND:
             {
                 var (lhc, rhc) = Helpers.Conversions<uint>(lhs, rhs);
-                return Expression.Convert(Expression.And(lhc, rhc), typeof(double));
+                return Helpers.Convert<double>(Expression.And(lhc, rhc));
             }
             case BITWISE_OR:
             {
                 var (lhc, rhc) = Helpers.Conversions<uint>(lhs, rhs);
-                return Expression.Convert(Expression.Or(lhc, rhc), typeof(double));
+                return Helpers.Convert<double>(Expression.Or(lhc, rhc));
             }
             case SLASH:
             {
@@ -128,9 +128,9 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
             if (expr.Arguments.Count != 3)
                 throw new ExpressionException("iif requires exactly three arguments");
 
-            var test = Expression.Convert(Build(expr.Arguments[0]), typeof(bool));
-            var ifTrue = Expression.Convert(Build(expr.Arguments[1]), typeof(object));
-            var ifFalse = Expression.Convert(Build(expr.Arguments[2]), typeof(object));
+            var test = Helpers.Convert<bool>(Build(expr.Arguments[0]));
+            var ifTrue = Helpers.Convert<object>(Build(expr.Arguments[1]));
+            var ifFalse = Helpers.Convert<object>(Build(expr.Arguments[2]));
 
             return Expression.Condition(test, ifTrue, ifFalse);
         }
@@ -174,7 +174,7 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
 
         static Expression GetParameter(Type parameterType, Expression expression)
         {
-            var converted = Expression.Convert(expression, typeof(object));
+            var converted = Helpers.Convert<object>(expression);
 
             if (parameterType == typeof(Func<object?>))
             {
@@ -186,7 +186,7 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
 
             if (x.Contains(parameterType))
             {
-                return Expression.Convert(expression, parameterType);
+                return Helpers.Convert(expression, parameterType);
             }
 
             return converted;
@@ -199,8 +199,8 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
 
     public Expression VisitLogicalExpr(Expr.Logical expr)
     {
-        var lhs = Expression.Convert(Build(expr.Left), typeof(bool));
-        var rhs = Expression.Convert(Build(expr.Right), typeof(bool));
+        var lhs = Helpers.Convert<bool>(Build(expr.Left));
+        var rhs = Helpers.Convert<bool>(Build(expr.Right));
 
         return expr.Operator.TokenType switch
         {
@@ -216,8 +216,8 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
 
         return expr.Operator.TokenType switch
         {
-            BANG => Expression.Not(Expression.Convert(rhs, typeof(bool))),
-            MINUS => Expression.Negate(Expression.Convert(rhs, typeof(double))),
+            BANG => Expression.Not(Helpers.Convert<bool>(rhs)),
+            MINUS => Expression.Negate(Helpers.Convert<double>(rhs)),
             _ => throw new ExpressionException("Shouldn't be able to get here")
         };
     }
