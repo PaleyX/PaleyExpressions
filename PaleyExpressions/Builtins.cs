@@ -15,7 +15,7 @@ public static class Builtins
     [Function("iif")]
     public static object? Iif(bool condition, Func<object?> ifTrue, Func<object?> ifFalse)
     {
-        // this is never actually called - iif is special cased in ExpressionBuilder
+        // iif is special cased in ExpressionBuilder
         // to build an Expression.Condition instead of a MethodCallExpression,
         // but this is here for completeness
         return condition ? ifTrue() : ifFalse();

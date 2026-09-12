@@ -5,15 +5,20 @@ using PaleyExpressions.Visitors;
 namespace PaleyExpressions.Runners;
 
 /// <summary>
-/// A runner that compiles an expression into a delegate and invokes it with the provided variables.
+/// The runner constructor for building an Expression Tree.
 /// </summary>
-/// <param name="source"></param>
-/// <param name="functions"></param>
+/// <param name="source">the source expression</param>
+/// <param name="functions">the Type of a class containing user defined functions</param>
 public class ExpressionRunner(string source, Type? functions = null) : IRunner
 {
     private Func<object?[], object?>? _invoker;
     private List<ParameterExpression>? _parameters;
 
+    /// <summary>
+    /// Interprets the expression with the given variables.
+    /// </summary>
+    /// <param name="variables">the variables to use in the evaluation</param>
+    /// <returns>the result of evaluating the expression</returns>
     public object? Interpret(Dictionary<string, object?>? variables = null)
     {
         try
