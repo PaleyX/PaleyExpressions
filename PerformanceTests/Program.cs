@@ -1,13 +1,12 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
-using PaleyExpressions;
 using PaleyExpressions.Runners;
 
 namespace PerformanceTests;
 
+[MemoryDiagnoser]
 public class PreliminaryTest
 {
-    private Expr _expression = null!;
     private ExpressionRunner _expressionRunner = null!;
     private AstRunner _astRunner = null!;
 
@@ -18,16 +17,14 @@ public class PreliminaryTest
         { "c", 3.5d }
     };
 
-    [Params("abs(-1)", "10+10", "iif(1>2,10,20)", "a+b+c", "(1.4+3.5)/c", "a&b")]
+    //[Params("abs(-1)", "10+10", "iif(1>2,upper(\"hello\"),upper(\"world\"))", "a+b+c", "(1.4+3.5)/c", "a&b")]
+    [Params("c*c", "10*10", "10-c", "10+10", "1+2+3+4+5+6+7+8+9+10")]
+
     public string Code = null!;
 
     [GlobalSetup]
     public void Setup()
     {
-        var tokens = new Scanner(Code).ScanTokens();
-        var parser = new Parser(tokens);
-        _expression = parser.Parse();
-
         _expressionRunner = new ExpressionRunner(Code);
         _astRunner = new AstRunner(Code);
     }

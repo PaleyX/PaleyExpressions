@@ -157,7 +157,7 @@ internal class AstInterpreter : Expr.IVisitor<object?>
                 var paramType = parameter.ParameterType.GetElementType();
 
                 var array = Array.CreateInstance(paramType, expr.Arguments.Count - item.index);
-                for (int i = item.index; i < expr.Arguments.Count; i++)
+                for (var i = item.index; i < expr.Arguments.Count; i++)
                 {
                     array.SetValue(GetParameter(paramType, expr.Arguments[i]), i - item.index);
                 }
@@ -168,7 +168,7 @@ internal class AstInterpreter : Expr.IVisitor<object?>
             args.Add(GetParameter(parameter.ParameterType, item.value));
         }
 
-        // if function has a params but the call doesnt have any parameters,
+        // if function has a params but the call doesn't have any parameters,
         // add an empty array
         if (last != null && last.IsDefined(typeof(ParamArrayAttribute), false))
         {

@@ -22,78 +22,92 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
         {
             case GREATER:
             {
-                var (lhc, rhc) = Conversions<double>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
                 return Expression.GreaterThan(lhc, rhc);
             }
             case GREATER_EQUAL:
             {
-                var (lhc, rhc) = Conversions<double>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
                 return Expression.GreaterThanOrEqual(lhc, rhc);
             }
             case LESS:
             {
-                var (lhc, rhc) = Conversions<double>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
                 return Expression.LessThan(lhc, rhc);
             }
             case LESS_EQUAL:
             {
-                var (lhc, rhc) = Conversions<double>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
                 return Expression.LessThanOrEqual(lhc, rhc);
             }
             case MINUS:
             {
-                var (lhc, rhc) = Conversions<double>(lhs, rhs);
+                if (Helpers.TryFoldable<double>(lhs, rhs, out var folds))
+                {
+                    return Expression.Constant(folds.lhs - folds.rhs, typeof(double));
+                }
+                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
                 return Expression.Subtract(lhc, rhc);
             }
             case BANG_EQUAL:
             {
                 var equals = typeof(object).GetMethod("Equals", [typeof(object), typeof(object)]);
-                var (lhc, rhc) = Conversions<object>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<object>(lhs, rhs);
                 return Expression.Not(Expression.Call(equals!, lhc, rhc));
             }
             case EQUAL_EQUAL:
             {
                 var equals = typeof(object).GetMethod("Equals", [typeof(object), typeof(object)]);
-                var (lhc, rhc) = Conversions<object>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<object>(lhs, rhs);
                 return Expression.Call(equals!, lhc, rhc);
             }
             case PLUS:
             {
-                var plus = typeof(Helpers).GetMethod("Plus", BindingFlags.NonPublic | BindingFlags.Static);
-                var (lhc, rhc) = Conversions<object>(lhs, rhs);
-                return Expression.Call(plus!, lhc, rhc);
+                return Helpers.GetPlus(lhs, rhs);
             }
             case LEFT_SHIFT:
             case RIGHT_SHIFT:
             {
                 var proc = expr.Operator.TokenType == LEFT_SHIFT ? "LeftShift" : "RightShift";
                 var shift = typeof(Helpers).GetMethod(proc, BindingFlags.NonPublic | BindingFlags.Static);
-                var (lhc, rhc) = Conversions<object>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<object>(lhs, rhs);
                 return Expression.Call(shift!, lhc, rhc);
             }
             case BITWISE_AND:
             {
-                var (lhc, rhc) = Conversions<uint>(lhs, rhs);
-                return Expression.Convert(Expression.And(lhc, rhc), typeof(double));
+                var (lhc, rhc) = Helpers.Conversions<uint>(lhs, rhs);
+                return Helpers.Convert<double>(Expression.And(lhc, rhc));
             }
             case BITWISE_OR:
             {
-                var (lhc, rhc) = Conversions<uint>(lhs, rhs);
-                return Expression.Convert(Expression.Or(lhc, rhc), typeof(double));
+                var (lhc, rhc) = Helpers.Conversions<uint>(lhs, rhs);
+                return Helpers.Convert<double>(Expression.Or(lhc, rhc));
             }
             case SLASH:
             {
-                var (lhc, rhc) = Conversions<double>(lhs, rhs);
+                if (Helpers.TryFoldable<double>(lhs, rhs, out var folds))
+                {
+                    return Expression.Constant(folds.lhs / folds.rhs, typeof(double));
+                }
+                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
                 return Expression.Divide(lhc, rhc);
             }
             case STAR:
             {
-                var (lhc, rhc) = Conversions<double>(lhs, rhs);
+                if (Helpers.TryFoldable<double>(lhs, rhs, out var folds))
+                {
+                    return Expression.Constant(folds.lhs * folds.rhs, typeof(double));
+                }
+                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
                 return Expression.Multiply(lhc, rhc);
             }
             case MOD:
             {
-                var (lhc, rhc) = Conversions<double>(lhs, rhs);
+                if (Helpers.TryFoldable<double>(lhs, rhs, out var folds))
+                {
+                    return Expression.Constant(folds.lhs % folds.rhs, typeof(double));
+                }
+                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
                 return Expression.Modulo(lhc, rhc);
             }
         }
@@ -105,6 +119,21 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
     {
         var args = new List<Expression>();
         var parameters = expr.Function.GetParameters();
+
+        // Special-case the Builtins.Iif to emit a conditional expression instead of
+        // creating delegate thunks for lazy branches. This preserves lazy semantics
+        // while avoiding delegate allocation and invocation overhead 
+        if (expr.Function.DeclaringType == typeof(Builtins) && expr.Function.Name == nameof(Builtins.Iif))
+        {
+            if (expr.Arguments.Count != 3)
+                throw new ExpressionException("iif requires exactly three arguments");
+
+            var test = Helpers.Convert<bool>(Build(expr.Arguments[0]));
+            var ifTrue = Helpers.Convert<object>(Build(expr.Arguments[1]));
+            var ifFalse = Helpers.Convert<object>(Build(expr.Arguments[2]));
+
+            return Expression.Condition(test, ifTrue, ifFalse);
+        }
 
         var last = parameters.LastOrDefault();
         var paramsAdded = false;
@@ -129,7 +158,7 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
             args.Add(GetParameter(parameter.ParameterType, Build(item.value)));
         }
 
-        // if function has a params but the call doesnt have any parameters,
+        // if function has a params but the call doesn't have any parameters,
         // add an empty array
         if (last != null && last.IsDefined(typeof(ParamArrayAttribute), false))
         {
@@ -145,7 +174,7 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
 
         static Expression GetParameter(Type parameterType, Expression expression)
         {
-            var converted = Expression.Convert(expression, typeof(object));
+            var converted = Helpers.Convert<object>(expression);
 
             if (parameterType == typeof(Func<object?>))
             {
@@ -157,7 +186,7 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
 
             if (x.Contains(parameterType))
             {
-                return Expression.Convert(expression, parameterType);
+                return Helpers.Convert(expression, parameterType);
             }
 
             return converted;
@@ -170,8 +199,8 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
 
     public Expression VisitLogicalExpr(Expr.Logical expr)
     {
-        var lhs = Expression.Convert(Build(expr.Left), typeof(bool));
-        var rhs = Expression.Convert(Build(expr.Right), typeof(bool));
+        var lhs = Helpers.Convert<bool>(Build(expr.Left));
+        var rhs = Helpers.Convert<bool>(Build(expr.Right));
 
         return expr.Operator.TokenType switch
         {
@@ -187,8 +216,8 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
 
         return expr.Operator.TokenType switch
         {
-            BANG => Expression.Not(Expression.Convert(rhs, typeof(bool))),
-            MINUS => Expression.Negate(Expression.Convert(rhs, typeof(double))),
+            BANG => Expression.Not(Helpers.Convert<bool>(rhs)),
+            MINUS => Expression.Negate(Helpers.Convert<double>(rhs)),
             _ => throw new ExpressionException("Shouldn't be able to get here")
         };
     }
@@ -208,28 +237,5 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
     }
 
     public List<ParameterExpression> GetParameters() => [.. _parameters.Values];
-
-    private static (Expression lhc, Expression rhc) Conversions<T>(Expression lhs, Expression rhs)
-    {
-        // if we are converting to uint and lhs or rhs are Parameters,
-        // we need to convert the parameters to double first,
-        // then convert to uint. This is because the parameters are of type object,
-        // and we cannot convert directly from object to uint.
-        if (typeof(T) == typeof(uint))
-        {
-            if (lhs.NodeType == ExpressionType.Parameter)
-            {
-                lhs = Expression.Convert(lhs, typeof(double));
-            }
-
-            if(rhs.NodeType == ExpressionType.Parameter)
-            {
-                rhs = Expression.Convert(rhs, typeof(double));
-            }
-        }
-
-        return (Expression.Convert(lhs, typeof(T)), 
-                Expression.Convert(rhs, typeof(T)));
-    }
 }
 

@@ -27,7 +27,7 @@ while(true)
                 break;
             default:
                 var result = ProcessExpression(command);
-                Console.WriteLine(result);
+                Console.WriteLine(result ?? "Nil");
                 break;
         }
     }
@@ -63,12 +63,30 @@ static bool IsValidIdentifier(string name)
 
 object? ProcessExpression(string expression)
 {
-    var ast = new AstRunner(expression, typeof(Functions)).Interpret(_variables);
-    var expr = new ExpressionRunner(expression, typeof(Functions)).Interpret(_variables);
+    object? astResult = null;
+    object? exprResult = null;
 
-    Debug.Assert((ast == null && expr == null) || ast!.Equals(expr));
+    try
+    {
+        astResult = new AstRunner(expression, typeof(Functions)).Interpret(_variables);
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine($"AST Error: {e.Message}");
+    }
 
-    return ast;
+    try
+    {
+        exprResult = new ExpressionRunner(expression, typeof(Functions)).Interpret(_variables);
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine($"Expression Error: {e.Message}");
+    }
+
+    Debug.Assert((astResult == null && exprResult == null) || astResult!.Equals(exprResult));
+
+    return astResult;
 }
 partial class Program
 {

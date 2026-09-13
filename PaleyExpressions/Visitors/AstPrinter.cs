@@ -28,7 +28,7 @@ internal class AstPrinter : Expr.IVisitor<string>
 
     public string VisitLiteralExpr(Expr.Literal expr)
     {
-        return expr.Value == null ? "nil" : expr.Value.ToString();
+        return (expr.Value == null ? "nil" : expr.Value.ToString())!;
     }
 
     public string VisitLogicalExpr(Expr.Logical expr)

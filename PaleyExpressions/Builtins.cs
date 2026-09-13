@@ -15,6 +15,9 @@ public static class Builtins
     [Function("iif")]
     public static object? Iif(bool condition, Func<object?> ifTrue, Func<object?> ifFalse)
     {
+        // iif is special cased in ExpressionBuilder
+        // to build an Expression.Condition instead of a MethodCallExpression,
+        // but this is here for completeness
         return condition ? ifTrue() : ifFalse();
     }
 
@@ -26,7 +29,7 @@ public static class Builtins
             throw new ExpressionException("Cond must have arguments in multiples of 2");
         }
 
-        for (int i = 0; i < gort.Length; i += 2)
+        for (var i = 0; i < gort.Length; i += 2)
         {
             if (gort[i]() is true)
             {
