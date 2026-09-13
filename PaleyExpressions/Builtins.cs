@@ -29,7 +29,7 @@ public static class Builtins
             throw new ExpressionException("Cond must have arguments in multiples of 2");
         }
 
-        for (int i = 0; i < gort.Length; i += 2)
+        for (var i = 0; i < gort.Length; i += 2)
         {
             if (gort[i]() is true)
             {

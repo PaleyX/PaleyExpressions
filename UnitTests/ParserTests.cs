@@ -1,5 +1,5 @@
-﻿using PaleyExpressions;
-using System.Linq.Expressions;
+﻿using System.Reflection;
+using PaleyExpressions;
 
 namespace UnitTests;
 
@@ -38,6 +38,60 @@ public class ParserTests
         literal = Assert.IsType<Expr.Literal>(binary.Right);
         value = Assert.IsType<double>(literal.Value);
         Assert.Equal(5d, value);
+    }
+
+    [Fact]
+    public void AstIsCreatedCorrectlyForBuiltinFunctionCall()
+    {
+        var tokens = new Scanner("10.76*abs(2-a)").ScanTokens();
+        var parser = new Parser(tokens);
+
+        var expression = parser.Parse();
+
+        // Top level
+        var binary = Assert.IsType<Expr.Binary>(expression);
+        Assert.Equal(TokenType.STAR, binary.Operator.TokenType);
+
+        // LHS
+        var literal = Assert.IsType<Expr.Literal>(binary.Left);
+        var value = Assert.IsType<double>(literal.Value);
+        Assert.Equal(10.76d, value);
+
+        // RHS
+        var call = Assert.IsType<Expr.Call>(binary.Right);
+        // Function name is a variable (an identifier)
+        var variable = Assert.IsType<Expr.Variable>(call.Callee);
+        Assert.Equal(TokenType.IDENTIFIER, variable.Name.TokenType);
+        Assert.Equal("abs", variable.Name.Lexeme);
+        Assert.Null(variable.Name.Literal);
+
+        // RHS - call arguments
+        Assert.Equal(1, call.Arguments.Count);
+
+        // RHS - call method
+        // the actual type is RuntimeMethodInfo
+        var method = Assert.IsAssignableFrom<MethodInfo>(call.Function);
+        Assert.Equal("Abs", method.Name);
+        Assert.Equal("Builtins", method.DeclaringType?.Name);
+
+        Assert.Equal(method.GetParameters().Length, call.Arguments.Count);
+
+        // RHS - argument
+        var argument = call.Arguments.First();
+        binary = Assert.IsType<Expr.Binary>(argument);
+
+        Assert.Equal(TokenType.MINUS, binary.Operator.TokenType);
+
+        // argument LHS
+        literal = Assert.IsType<Expr.Literal>(binary.Left);
+        value = Assert.IsType<double>(literal.Value);
+        Assert.Equal(2d, value);
+
+        // argument RHS
+        variable = Assert.IsType<Expr.Variable>(binary.Right);
+        Assert.Equal(TokenType.IDENTIFIER, variable.Name.TokenType);
+        Assert.Equal("a", variable.Name.Lexeme);
+        Assert.Null(variable.Name.Literal);
     }
 
     [Theory]

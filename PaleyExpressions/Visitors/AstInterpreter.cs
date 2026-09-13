@@ -157,7 +157,7 @@ internal class AstInterpreter : Expr.IVisitor<object?>
                 var paramType = parameter.ParameterType.GetElementType();
 
                 var array = Array.CreateInstance(paramType, expr.Arguments.Count - item.index);
-                for (int i = item.index; i < expr.Arguments.Count; i++)
+                for (var i = item.index; i < expr.Arguments.Count; i++)
                 {
                     array.SetValue(GetParameter(paramType, expr.Arguments[i]), i - item.index);
                 }
