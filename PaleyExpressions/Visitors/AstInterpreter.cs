@@ -58,6 +58,7 @@ internal class AstInterpreter : Expr.IVisitor<object?>
         {
             BANG => !IsTruthy(right),
             MINUS => -CheckNumberOperand(expr.Operator, right),
+            BITWISE_NOT => (double)~(uint)CheckNumberOperand(expr.Operator, right),
             // Unreachable.
             _ => null
         };

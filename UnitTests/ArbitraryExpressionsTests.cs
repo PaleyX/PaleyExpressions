@@ -1,6 +1,7 @@
 ﻿using PaleyExpressions;
 using PaleyExpressions.Runners;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 
 namespace UnitTests;
 
@@ -20,6 +21,7 @@ public class ArbitraryExpressionsTests
         { "n1", 1d },
         { "n2", 2d },
         { "n3", 3d },
+        { "n255", 255d },
         { "pi", Math.PI },
         { "s", "Hello" },
         { "bt", true },
@@ -55,6 +57,10 @@ public class ArbitraryExpressionsTests
     [InlineData("n2&n3", 2d)]
     [InlineData("1234&4321", (double)(1234 & 4321))]
     [InlineData("1234|4321", (double)(1234 | 4321))]
+    [InlineData("~255", (double)~(uint)255d)]
+    [InlineData("n2&~n255", 0d)]
+    [InlineData("~10|255", (double)(~(uint)10d | (uint)255d))]
+    [InlineData("10+~1000", (double)((uint)10d + ~(uint)1000d))]
     [InlineData("bt and bf", false)]
     [InlineData("bf and bt", false)]
     [InlineData("bf or bt", true)]

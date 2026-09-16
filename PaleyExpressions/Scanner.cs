@@ -43,18 +43,15 @@ internal class Scanner(string source)
         {
             case '(': AddToken(LEFT_PAREN); break;
             case ')': AddToken(RIGHT_PAREN); break;
-            //case '{': AddToken(LEFT_BRACE); break;
-            //case '}': AddToken(RIGHT_BRACE); break;
             case ',': AddToken(COMMA); break;
-            //case '.': AddToken(DOT); break;
             case '-': AddToken(MINUS); break;
             case '+': AddToken(PLUS); break;
-            //case ';': AddToken(SEMICOLON); break;
             case '*': AddToken(STAR); break;
             case '/': AddToken(SLASH); break;
             case '%': AddToken(MOD); break;
             case '&': AddToken(BITWISE_AND); break;
             case '|': AddToken(BITWISE_OR); break;
+            case '~': AddToken(BITWISE_NOT); break;
             case '!':
                 AddToken(Match('=') ? BANG_EQUAL : BANG);
                 break;

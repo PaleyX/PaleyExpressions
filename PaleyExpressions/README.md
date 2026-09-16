@@ -12,6 +12,7 @@ PaleyExpressions is a .NET library distributed as a NuGet package. It contains h
 - [Operators](#operators)
 - [Built-in Functions](#built-in-functions)
 - [Examples](#examples)
+- [REPL Example](#simple-repl-example)
 
 Package
 -------
@@ -41,6 +42,10 @@ PaleyExpressions has 2 ways to evaluate expressions:
 The expression is passed as a string to the constructor of the runner. 
 The first time the Interpret method is called, the expression is parsed and compiled into an AST or Expression Tree.
 Subsequent calls to Interpret will use the cached AST or Expression Tree for faster execution.
+
+Variables can be used within an expression, a variable name name must begin with an alphabetic
+character or an underscore. A variable name can be any length and consist of alphanumeric of underscore
+characters. Variable values are passed to an expression via the Interpret function using Dictionary<string, object?> 
 
 ```csharp
 using PaleyExpressions.Runners;
@@ -118,6 +123,7 @@ Operators
 |!|	logical NOT|!true|	false|
 |&|	bitwise AND|5 & 3|1|
 |\||bitwise OR|	5 \| 3|	7|
+|~|bitwise NOT| ~5&255| 250|
 
 Built-in Functions
 ------------------
@@ -148,6 +154,45 @@ Note: whitespace between tokens within an expression is ignored
 - `iif(x > 10, upper("x is greater than 10"), upper("x is less than or equal to 10"))`
 - `1 > 2 and 3 < 4`
 - `true and !false`
+
+Simple REPL example
+-------------------
+```csharp
+using PaleyExpressions;
+using PaleyExpressions.Runners;
+
+var variables = new Dictionary<string, object?>
+{
+    {"n", 10.567d},
+    {"s", "hello"}
+};
+
+while (true)
+{
+    try
+    {
+        var expression = Console.ReadLine();
+
+        var ast = new AstRunner(expression, typeof(Functions))
+            .Interpret(variables);
+        var exp = new ExpressionRunner(expression, typeof(Functions))
+            .Interpret(variables);
+
+        Console.WriteLine($"AST: {ast}");
+        Console.WriteLine($"EXP: {exp}");
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine("Error: " + e.Message);
+    }
+}
+
+public static class Functions
+{
+    [Function("sqr")]
+    public static double Square(double d) => d * d;
+}
+```
 
 Links
 -----

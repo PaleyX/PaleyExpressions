@@ -162,7 +162,7 @@ internal class Parser(List<Token> tokens, Type? functions = null)
 
     private Expr Unary()
     {
-        if (Match(BANG, MINUS))
+        if (Match(BANG, MINUS, BITWISE_NOT))
         {
             var op = Previous();
             var right = Unary();

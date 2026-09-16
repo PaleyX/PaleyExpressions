@@ -61,23 +61,6 @@ internal static class Helpers
 
     internal static (Expression lhc, Expression rhc) Conversions<T>(Expression lhs, Expression rhs)
     {
-        // if we are converting to uint and lhs or rhs are Parameters,
-        // we need to convert the parameters to double first,
-        // then convert to uint. This is because the parameters are of type object,
-        // and we cannot convert directly from object to uint.
-        if (typeof(T) == typeof(uint))
-        {
-            if (lhs.NodeType == ExpressionType.Parameter)
-            {
-                lhs = Convert<double>(lhs);
-            }
-
-            if (rhs.NodeType == ExpressionType.Parameter)
-            {
-                rhs = Convert<double>(rhs);
-            }
-        }
-
         if (lhs.Type != typeof(T))
         {
             lhs = Convert<T>(lhs);
@@ -93,7 +76,20 @@ internal static class Helpers
 
     internal static Expression Convert<T>(Expression convert)
     {
-        if(convert.Type == typeof(T))
+        // if we are converting to uint and 'convert' is a Parameter,
+        // we need to convert the parameter to double first,
+        // then convert to uint. This is because the parameter is of type object,
+        // and we cannot convert directly from object to uint.
+
+        if (typeof(T) == typeof(uint))
+        {
+            if (convert.NodeType == ExpressionType.Parameter)
+            {
+                convert = Convert<double>(convert);
+            }
+        }
+
+        if (convert.Type == typeof(T))
         {
             return convert;
         }
