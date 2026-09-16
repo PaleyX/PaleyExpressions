@@ -157,6 +157,8 @@ Note: whitespace between tokens within an expression is ignored
 
 Simple REPL example
 -------------------
+This shows how to write a simple REPL for the expression evaluators. 
+It adds some variables and a custom function then runs both evaluators using them
 ```csharp
 using PaleyExpressions;
 using PaleyExpressions.Runners;
