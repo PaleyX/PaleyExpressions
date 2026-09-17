@@ -1,4 +1,5 @@
-﻿using static PaleyExpressions.TokenType;
+﻿using System.Globalization;
+using static PaleyExpressions.TokenType;
 
 namespace PaleyExpressions;
 
@@ -75,7 +76,7 @@ internal class Scanner(string source)
             default:
                 if (IsDigit(c))
                 {
-                    ScanNumber();
+                    ScanNumber(c);
                 }
                 else if (IsAlpha(c))
                 {
@@ -109,7 +110,35 @@ internal class Scanner(string source)
         AddToken(STRING, value);
     }
 
-    private void ScanNumber()
+    private void ScanNumber(char current)
+    {
+        if (current == '0' && Peek() == 'x')
+        {
+            ScanHexadecimal();
+        }
+        else
+        {
+            ScanDecimal();
+        }
+    }
+
+    private void ScanHexadecimal()
+    {
+        // Consume 0x
+        _start += 2;
+        _current = _start;
+
+        while (char.IsAsciiHexDigit(Peek())) Advance();
+
+        if (_start == _current)
+        {
+            throw new ExpressionException("Empty hexadecimal number");
+        }
+
+        AddToken(NUMBER, (double)uint.Parse(source[_start.._current], NumberStyles.HexNumber));
+    }
+
+    private void ScanDecimal()
     {
         while (IsDigit(Peek())) Advance();
 

@@ -91,10 +91,12 @@ var ast = new AstRunner("reverse('hello')", typeof(Functions));
 
 Types
 -----
-- numbers (always C# double)
-- strings
-- booleans (literal: true/false)
-- null (literal: nil)
+|Type|Literal examples|Explanation|
+|----|----------------|-----------|
+|Number|10, 3456.765, 0xFF|.Net double|
+|String|"", "Hello"||
+|Boolean|True, False, true, false||
+|Null|nil||
 
 Operators
 ---------
@@ -123,7 +125,7 @@ Operators
 |!|	logical NOT|!true|	false|
 |&|	bitwise AND|5 & 3|1|
 |\||bitwise OR|	5 \| 3|	7|
-|~|bitwise NOT| ~5&255| 250|
+|~|bitwise NOT| ~5 & 255| 250|
 
 Built-in Functions
 ------------------
