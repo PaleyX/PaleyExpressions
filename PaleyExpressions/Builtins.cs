@@ -38,12 +38,5 @@ public static class Builtins
         }
 
         return null;
-    }
-
-    internal static List<Type> FunctionSources { get; } = [typeof(Builtins)];
-
-    public static void AddFunctionsClass(Type type)
-    {
-        FunctionSources.Insert(0, type);
-    }
+   }
 }

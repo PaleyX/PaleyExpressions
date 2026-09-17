@@ -1,4 +1,5 @@
-﻿using static PaleyExpressions.TokenType;
+﻿using System.Globalization;
+using static PaleyExpressions.TokenType;
 
 namespace PaleyExpressions;
 
@@ -38,23 +39,20 @@ internal class Scanner(string source)
 
     private void ScanToken()
     {
-        char c = Advance();
+        var c = Advance();
         switch (c)
         {
             case '(': AddToken(LEFT_PAREN); break;
             case ')': AddToken(RIGHT_PAREN); break;
-            //case '{': AddToken(LEFT_BRACE); break;
-            //case '}': AddToken(RIGHT_BRACE); break;
             case ',': AddToken(COMMA); break;
-            //case '.': AddToken(DOT); break;
             case '-': AddToken(MINUS); break;
             case '+': AddToken(PLUS); break;
-            //case ';': AddToken(SEMICOLON); break;
             case '*': AddToken(STAR); break;
             case '/': AddToken(SLASH); break;
             case '%': AddToken(MOD); break;
             case '&': AddToken(BITWISE_AND); break;
             case '|': AddToken(BITWISE_OR); break;
+            case '~': AddToken(BITWISE_NOT); break;
             case '!':
                 AddToken(Match('=') ? BANG_EQUAL : BANG);
                 break;
@@ -78,7 +76,7 @@ internal class Scanner(string source)
             default:
                 if (IsDigit(c))
                 {
-                    ScanNumber();
+                    ScanNumber(c);
                 }
                 else if (IsAlpha(c))
                 {
@@ -112,7 +110,35 @@ internal class Scanner(string source)
         AddToken(STRING, value);
     }
 
-    private void ScanNumber()
+    private void ScanNumber(char current)
+    {
+        if (current == '0' && Peek() == 'x')
+        {
+            ScanHexadecimal();
+        }
+        else
+        {
+            ScanDecimal();
+        }
+    }
+
+    private void ScanHexadecimal()
+    {
+        // Consume 0x
+        _start += 2;
+        _current = _start;
+
+        while (char.IsAsciiHexDigit(Peek())) Advance();
+
+        if (_start == _current)
+        {
+            throw new ExpressionException("Empty hexadecimal number");
+        }
+
+        AddToken(NUMBER, (double)uint.Parse(source[_start.._current], NumberStyles.HexNumber));
+    }
+
+    private void ScanDecimal()
     {
         while (IsDigit(Peek())) Advance();
 

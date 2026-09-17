@@ -3,8 +3,8 @@
 internal enum TokenType
 {
     // Single-character tokens.
-    LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
-    COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR, MOD,
+    LEFT_PAREN, RIGHT_PAREN, 
+    COMMA, MINUS, PLUS, SLASH, STAR, MOD,
     
     // Bitwise
     BITWISE_AND, BITWISE_OR, BITWISE_XOR, BITWISE_NOT,

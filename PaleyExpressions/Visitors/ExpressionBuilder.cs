@@ -218,6 +218,7 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
         {
             BANG => Expression.Not(Helpers.Convert<bool>(rhs)),
             MINUS => Expression.Negate(Helpers.Convert<double>(rhs)),
+            BITWISE_NOT => Helpers.Convert<double>(Expression.Not(Helpers.Convert<uint>(rhs))),
             _ => throw new ExpressionException("Shouldn't be able to get here")
         };
     }
