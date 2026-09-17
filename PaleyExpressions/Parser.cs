@@ -8,6 +8,16 @@ internal class Parser(List<Token> tokens, Type? functions = null)
     private List<Token> Tokens { get; } = tokens;
     private Type? Functions { get; } = functions;
 
+    private List<Type> FunctionSources
+    {
+        get;
+    } = [typeof(Builtins)];
+
+    private void AddFunctionsClass(Type type)
+    {
+        FunctionSources.Insert(0, type);
+    }
+
     internal Expr Parse()
     {
         var expr = Expression();
@@ -288,13 +298,13 @@ internal class Parser(List<Token> tokens, Type? functions = null)
 
         if (Functions != null)
         {
-            if (!Builtins.FunctionSources.Contains(Functions))
+            if (!FunctionSources.Contains(Functions))
             {
-                Builtins.AddFunctionsClass(Functions);
+                AddFunctionsClass(Functions);
             }
         }
 
-        var function = Tools.GetFunction(variable.Name.Lexeme, arguments);
+        var function = Tools.GetFunction(FunctionSources, variable.Name.Lexeme, arguments);
 
         return new Expr.Call(callee, paren, arguments, function);
     }

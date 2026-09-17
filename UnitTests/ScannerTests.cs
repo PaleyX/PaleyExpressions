@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using PaleyExpressions;
+﻿using PaleyExpressions;
 using static PaleyExpressions.TokenType;
 
 namespace UnitTests;

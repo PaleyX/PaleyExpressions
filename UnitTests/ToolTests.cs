@@ -7,16 +7,12 @@ namespace UnitTests;
 
 public class ToolTests
 {
-    public ToolTests()
-    {
-        Builtins.FunctionSources.Remove(typeof(ToolsTestsFunctions));
-        Builtins.AddFunctionsClass(typeof(ToolsTestsFunctions));
-    }
+    private readonly List<Type> _functions = [typeof(ToolsTestsFunctions)];
 
     [Fact]
     public void TooFewArgumentsThrowsCorrectly()
     {
-        var ex = Assert.Throws<ExpressionException>(() => Tools.GetFunction("f1", []));
+        var ex = Assert.Throws<ExpressionException>(() => Tools.GetFunction(_functions, "f1", []));
 
         Assert.Equal("Function 'f1': argument count mismatch", ex.Message);
     }
@@ -29,7 +25,7 @@ public class ToolTests
             new Expr.Literal("First")
         };
 
-        var func = Tools.GetFunction("f1", args);
+        var func = Tools.GetFunction(_functions, "f1", args);
 
         // Really, the test is that an exception is not thrown
         func.Name.Should().Be(nameof(ToolsTestsFunctions.F1));
@@ -45,7 +41,6 @@ public class ToolTests
         var builder = new ExpressionBuilder();
         var built = builder.VisitCallExpr(expr);
         var compiled = Expression.Lambda(built, builder.GetParameters()).Compile();
-        //result = compiled.DynamicInvoke([.. args]);
         result = compiled.DynamicInvoke();
 
         result.Should().Be("First");
@@ -54,7 +49,7 @@ public class ToolTests
     [Fact]
     public void NoArgumentsPassedToPurelyParamsIsOk()
     {
-        var func = Tools.GetFunction("f2", []);
+        var func = Tools.GetFunction(_functions, "f2", []);
 
         // Really, the test is that an exception is not thrown
         func.Name.Should().Be(nameof(ToolsTestsFunctions.F2));

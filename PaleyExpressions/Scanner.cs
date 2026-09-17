@@ -39,7 +39,7 @@ internal class Scanner(string source)
 
     private void ScanToken()
     {
-        char c = Advance();
+        var c = Advance();
         switch (c)
         {
             case '(': AddToken(LEFT_PAREN); break;

@@ -65,8 +65,8 @@ public class ParserTests
         Assert.Equal("abs", variable.Name.Lexeme);
         Assert.Null(variable.Name.Literal);
 
-        // RHS - call arguments
-        Assert.Equal(1, call.Arguments.Count);
+        // RHS - call arguments - only 1
+        Assert.Single(call.Arguments);
 
         // RHS - call method
         // the actual type is RuntimeMethodInfo
@@ -123,7 +123,6 @@ public class ParserTests
     [InlineData("abs(-1", "Expect ')' after arguments:")]
     [InlineData("1 +")]
     [InlineData("1 + 2 *")]
-
     public void ExpectExpressionAtEndThrowsCorrectly(string expression, string unexpected = "Expect expression:")
     {
         var tokens = new Scanner(expression).ScanTokens();
