@@ -23,7 +23,7 @@ internal static class Helpers
             return Expression.Call(concat!, lhs, rhs);
         }
 
-        // Fallback for Parameter etc.
+        // Fallback for Parameter (ie. variables) etc.
         var plus = typeof(Helpers).GetMethod("Plus", BindingFlags.NonPublic | BindingFlags.Static);
         var (lhc, rhc) = Conversions<object>(lhs, rhs);
         return Expression.Call(plus!, lhc, rhc);

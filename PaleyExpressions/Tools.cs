@@ -36,7 +36,7 @@ internal static class Tools
 
         if (isParams)
         {
-            var paramType = function.GetParameters().LastOrDefault().ParameterType.GetElementType();
+            var paramType = function.GetParameters().LastOrDefault()?.ParameterType.GetElementType();
             if (!(paramType == typeof(object) || paramType == typeof(Func<object>)))
             {
                 throw new ExpressionException($"{function.Name}: params type must be object or Func<object>");
