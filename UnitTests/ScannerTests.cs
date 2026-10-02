@@ -1,6 +1,4 @@
 ﻿using PaleyExpressions;
-using System.Linq.Expressions;
-using System.Runtime.InteropServices;
 using static PaleyExpressions.TokenType;
 
 namespace UnitTests;
@@ -87,7 +85,7 @@ public class ScannerTests
     }
 
     [Fact]
-    public void NilLiteralScanCorrectly()
+    public void NilLiteralScansCorrectly()
     {
         var scanner = new Scanner("nil");
         var tokens = scanner.ScanTokens();

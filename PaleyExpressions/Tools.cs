@@ -24,12 +24,17 @@ internal static class Tools
 
         if (!function.IsStatic)
         {
-            throw new ExpressionException("Callable function '{name}' must be static");
+            throw new ExpressionException($"Callable function '{name}' must be static");
         }
 
         if (function.IsGenericMethod)
         {
-            throw new ExpressionException("Callable function '{name}' cannot be generic");
+            throw new ExpressionException($"Callable function '{name}' cannot be generic");
+        }
+
+        if (!IsAllowedType(function.ReturnType))
+        {
+            throw new ExpressionException($"Callable function '{name}' has unallowed return type");
         }
 
         var isParams = function.GetParameters().LastOrDefault()?.IsDefined(typeof(ParamArrayAttribute), false) ?? false;
@@ -53,8 +58,25 @@ internal static class Tools
             {
                 throw new ExpressionException($"Function '{name}' expected {function.GetParameters().Length} argument(s) but got {args.Count()}");
             }
+
+            foreach (var parameter in function.GetParameters())
+            {
+                if (!(IsAllowedType(parameter.ParameterType) ||
+                                    parameter.ParameterType == typeof(Func<object>)))
+                {
+                    throw new ExpressionException($"Callable function '{name}' has unallowed parameter of type {parameter.ParameterType}");
+                }
+            }
         }
 
         return function;
+    }
+
+    private static bool IsAllowedType(Type type)
+    {
+        return type == typeof(string) ||
+               type == typeof(double) ||
+               type == typeof(bool) ||
+               type == typeof(object);
     }
 }

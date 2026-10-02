@@ -44,8 +44,8 @@ The first time the Interpret method is called, the expression is parsed and comp
 Subsequent calls to Interpret will use the cached AST or Expression Tree for faster execution.
 
 Variables can be used within an expression, a variable name name must begin with an alphabetic
-character or an underscore. A variable name can be any length and consist of alphanumeric of underscore
-characters. Variable values are passed to an expression via the Interpret function using Dictionary<string, object?> 
+character or an underscore. A variable name can be any length and consist of alphanumeric or underscore
+characters. Variable names are case sensitive. Variable values are passed to an expression via the Interpret function using Dictionary<string, object?> 
 
 ```csharp
 using PaleyExpressions.Runners;
@@ -95,7 +95,7 @@ Types
 |----|----------------|-----------|
 |Number|10, 3456.765, 0xFF|.Net double|
 |String|"", "Hello"||
-|Boolean|True, False, true, false||
+|Boolean|true, false||
 |Null|nil||
 
 Operators
@@ -151,8 +151,10 @@ Examples
 --------
 Note: whitespace between tokens within an expression is ignored
 
-- `10*(1+2.9)` 
-- `lower("Hello" + " " + "World!")`
+[Try examples using DotNet Fiddle](https://dotnetfiddle.net/pVLaSz)
+
+- `sqr(10*(1+2.9))` 
+- `lower(s + " " + "World!")`
 - `iif(x > 10, upper("x is greater than 10"), upper("x is less than or equal to 10"))`
 - `1 > 2 and 3 < 4`
 - `true and !false`
@@ -160,8 +162,13 @@ Note: whitespace between tokens within an expression is ignored
 Simple REPL example
 -------------------
 This shows how to write a simple REPL for the expression evaluators. 
-It adds some variables and a custom function then runs both evaluators using them
+It adds some variables and a custom function then runs both evaluators using them.
+
+[Try REPL using DotNet Fiddle](https://dotnetfiddle.net/ZeGHuZ)
+
 ```csharp
+using System;
+using System.Collections.Generic;
 using PaleyExpressions;
 using PaleyExpressions.Runners;
 
