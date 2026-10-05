@@ -1,15 +1,17 @@
 ﻿using PaleyExpressions;
-using PaleyExpressions.Runners;
 using System.Diagnostics;
 using System.Globalization;
+
+using Runner = PaleyExpressions.Runners.ExpressionRunner;
+//using Runner = PaleyExpressions.Runners.AstRunner;
 
 // use this for running a profiler
 
 var stopWatch = new Stopwatch();
 
 stopWatch.Start();
-var expr1 = new ExpressionRunner("x+1");
-var expr2 = new ExpressionRunner("upper(\"Hello \") + tostr(x)", typeof(Functions));
+var expr1 = new Runner("x+1");
+var expr2 = new Runner("upper(\"Hello \") + tostr(x)", typeof(Functions));
 stopWatch.Stop();
 
 Console.WriteLine($"Compile Time: {stopWatch.Elapsed.TotalMilliseconds} ms");

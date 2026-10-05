@@ -10,8 +10,7 @@ internal class AstInterpreter : Expr.IVisitor<object?>
     {
         _variables = variables;
 
-        var value = Evaluate(expression);
-        return value;
+        return Evaluate(expression);
     }
 
     public object? VisitLiteralExpr(Expr.Literal expr)
