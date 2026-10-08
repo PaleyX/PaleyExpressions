@@ -71,12 +71,18 @@ public class ArbitraryExpressionsTests
     [InlineData("s1 + s2 + s3", "ABC")]
     public void ArbitraryExpressions(string expression, object? expected)
     {
+        var test = new Test();
+
         var astResult = new AstRunner(expression).Interpret(_variables);
         var expressionsResult = new ExpressionRunner(expression).Interpret(_variables);
+        var astTResult = new AstRunner<Test>(expression).Interpret(test);
 
         Assert.Equal(astResult, expressionsResult);
+        Assert.Equal(astResult, astTResult);
+
         Assert.Equal(expected, astResult);
         Assert.Equal(expected, expressionsResult);
+        Assert.Equal(expected, astTResult);
     }
 
     [Theory]
@@ -90,12 +96,18 @@ public class ArbitraryExpressionsTests
     [InlineData("n2 << 2", 8d)]
     public void LeftShiftTests(string expression, object? expected)
     {
+        var test = new Test();
+
         var astResult = new AstRunner(expression).Interpret(_variables);
         var expressionsResult = new ExpressionRunner(expression).Interpret(_variables);
+        var astTResult = new AstRunner<Test>(expression).Interpret(test);
 
         Assert.Equal(astResult, expressionsResult);
+        Assert.Equal(astResult, astTResult);
+
         Assert.Equal(expected, astResult);
         Assert.Equal(expected, expressionsResult);
+        Assert.Equal(expected, astTResult);
     }
 
     [Theory]
@@ -110,12 +122,18 @@ public class ArbitraryExpressionsTests
 
     public void RightShiftTests(string expression, object? expected)
     {
+        var test = new Test();
+
         var astResult = new AstRunner(expression).Interpret(_variables);
         var expressionsResult = new ExpressionRunner(expression).Interpret(_variables);
+        var astTResult = new AstRunner<Test>(expression).Interpret(test);
 
         Assert.Equal(astResult, expressionsResult);
+        Assert.Equal(astResult, astTResult);
+
         Assert.Equal(expected, astResult);
         Assert.Equal(expected, expressionsResult);
+        Assert.Equal(expected, astTResult);
     }
 
     [Theory]
@@ -135,8 +153,10 @@ public class ArbitraryExpressionsTests
     {
         var ex = Assert.Throws<ExpressionException>(() => new ExpressionRunner(expression).Interpret(_variables));
         var ast = Assert.Throws<ExpressionException>(() => new AstRunner(expression).Interpret(_variables));
+        var astT = Assert.Throws<ExpressionException>(() => new AstRunner<Test>(expression).Interpret(new Test()));
 
         Assert.Equal(ex.Message, ast.Message);
+        Assert.Equal(ex.Message, astT.Message);
         Assert.Equal("Operands must be 2 numbers or a string and a number", ex.Message);
     }
 
@@ -159,10 +179,14 @@ public class ArbitraryExpressionsTests
     {
         var astResult = new AstRunner(expression).Interpret(_variables);
         var expressionsResult = new ExpressionRunner(expression).Interpret(_variables);
+        var astTResult = new AstRunner<Test>(expression).Interpret(new Test());
 
         Assert.Equal(astResult, expressionsResult);
+        Assert.Equal(astResult, astTResult);
+
         Assert.Equal(expected, astResult);
         Assert.Equal(expected, expressionsResult);
+        Assert.Equal(expected, astTResult);
     }
 
     [Fact]
@@ -178,21 +202,35 @@ public class ArbitraryExpressionsTests
 
         var astRunner = new AstRunner(expression);
         var expRunner = new ExpressionRunner(expression);
+        var astTRunner = new AstRunner<Changes1>(expression);
+
+        var changes = new Changes1
+        {
+            a = 10d,
+            b = 20d
+        };
 
         // numeric values
         var result1 = astRunner.Interpret(vars);
         var result2 = expRunner.Interpret(vars);
+        var result3 = astTRunner.Interpret(changes);
         Assert.Equal(30d, result1);
         Assert.Equal(result1, result2);
+        Assert.Equal(result1, result3);
 
         // string values
         vars["a"] = "hello";
         vars["b"] = " world";
 
+        changes.a = "hello";
+        changes.b = " world";
+
         result1 = astRunner.Interpret(vars);
         result2 = expRunner.Interpret(vars);
+        result3 = astTRunner.Interpret(changes);
         Assert.Equal("hello world", result1);
         Assert.Equal(result1, result2);
+        Assert.Equal(result1, result3);
     }
 
     [Fact]
@@ -213,8 +251,14 @@ public class ArbitraryExpressionsTests
         var expInc = new ExpressionRunner("a+1");
         var expDec = new ExpressionRunner("b-1");
 
+        var astTInc = new AstRunner<Changes2>("a+1");
+        var astTDec = new AstRunner<Changes2>("b-1");
+
         var astToStr = new AstRunner("tostr(a)", typeof(TestFunctions));
         var expToStr = new ExpressionRunner("tostr(a)", typeof(TestFunctions));
+        var astTToStr = new AstRunner<Changes2>("tostr(a)", typeof(TestFunctions));
+
+        var changes = new Changes2();
 
         for (var i = 0; i < 100; ++i)
         {
@@ -224,13 +268,20 @@ public class ArbitraryExpressionsTests
             expVars["a"] = expInc.Interpret(expVars);
             expVars["b"] = expDec.Interpret(expVars);
 
+            changes.a = (double)astTInc.Interpret(changes)!;
+            changes.b = (double)astTDec.Interpret(changes)!;
+
             Assert.Equal(astVars["a"], expVars["a"]);
             Assert.Equal(astVars["b"], expVars["b"]);
+            Assert.Equal(expVars["a"], changes.a);
+            Assert.Equal(expVars["b"], changes.b);
 
             astVars["s"] = astToStr.Interpret(astVars);
             expVars["s"] = expToStr.Interpret(expVars);
+            changes.s = (string)astTToStr.Interpret(changes)!;
 
             Assert.Equal(astVars["s"], expVars["s"]);
+            Assert.Equal(expVars["s"], changes.s);
         }
 
         Assert.Equal(100d, astVars["a"]);
@@ -239,8 +290,12 @@ public class ArbitraryExpressionsTests
         Assert.Equal(100d, expVars["a"]);
         Assert.Equal(0d, expVars["b"]);
 
+        Assert.Equal(100d, changes.a);
+        Assert.Equal(0d, changes.b);
+
         Assert.Equal("100", astVars["s"]);
         Assert.Equal("100", expVars["s"]);
+        Assert.Equal("100", changes.s);
     }
 }
 
@@ -248,4 +303,36 @@ public static class TestFunctions
 {
     [Function("tostr")]
     public static string ToStr(double value) => value.ToString();
+}
+
+public class Test
+{
+    public double a = 10d;
+    public double b = 20d;
+    public double c = 3.5d;
+    public double d = -12.894d;
+    public double n1 = 1d;
+    public double n2 = 2d;
+    public double n3 = 3d;
+    public double n255 = 255d;
+    public double pi = Math.PI;
+    public string s = "Hello";
+    public bool bt = true;
+    public bool bf = false;
+    public string s1 = "A";
+    public string s2 = "B";
+    public string s3 = "C";
+}
+
+public class Changes1
+{
+    public object? a;
+    public object? b;
+}
+
+public class Changes2
+{
+    public double a = 0;
+    public double b = 100;
+    public string s = "0";
 }
