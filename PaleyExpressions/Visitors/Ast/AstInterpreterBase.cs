@@ -1,58 +1,9 @@
-﻿using System.Reflection;
-using static PaleyExpressions.TokenType;
+﻿using static PaleyExpressions.TokenType;
 
-namespace PaleyExpressions.Visitors;
+namespace PaleyExpressions.Visitors.Ast;
 
-internal class AstInterpreter<T> : AstInterpreter where T : class
+internal abstract class AstInterpreterBase : Expr.IVisitor<object?>
 {
-    private T? _context;
-    private readonly Dictionary<string, FieldInfo?> _fields = new();
-
-    public object? Interpret(Expr expression, T context)
-    {
-        _context = context;
-
-        return Evaluate(expression);
-    }
-
-    public override object? VisitVariableExpr(Expr.Variable expr)
-    {
-        if (_context is null)
-        {
-            throw new ExpressionException($"Unknown variable '{expr.Name.Lexeme}'");
-        }
-
-        if (!_fields.TryGetValue(expr.Name.Lexeme, out var field))
-        {
-            // Try to get a field
-            field = typeof(T).GetField(expr.Name.Lexeme,
-               BindingFlags.Public |
-               BindingFlags.NonPublic |
-               BindingFlags.Instance);
-
-            _fields.Add(expr.Name.Lexeme, field);
-        }
-
-        if (field != null)
-        {
-            return field.GetValue(_context);
-        }
-
-        throw new ExpressionException($"Unknown variable '{expr.Name.Lexeme}'");
-    }
-}
-
-internal class AstInterpreter : Expr.IVisitor<object?>
-{
-    private Dictionary<string, object?>? _variables;
-
-    public object? Interpret(Expr expression, Dictionary<string, object?>? variables)
-    {
-        _variables = variables;
-
-        return Evaluate(expression);
-    }
-
     public object? VisitLiteralExpr(Expr.Literal expr)
     {
         return expr.Value;
@@ -79,15 +30,7 @@ internal class AstInterpreter : Expr.IVisitor<object?>
         return Evaluate(expr.Expression);
     }
 
-    public virtual object? VisitVariableExpr(Expr.Variable expr)
-    {
-        if (_variables != null && _variables.TryGetValue(expr.Name.Lexeme, out var value))
-        {
-            return value;
-        }
-
-        throw new ExpressionException($"Unknown variable '{expr.Name.Lexeme}'");
-    }
+    public abstract object? VisitVariableExpr(Expr.Variable expr);
 
     public object? VisitUnaryExpr(Expr.Unary expr)
     {

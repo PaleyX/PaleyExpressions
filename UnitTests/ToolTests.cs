@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using PaleyExpressions;
 using PaleyExpressions.Visitors;
+using PaleyExpressions.Visitors.Ast;
 using System.Linq.Expressions;
 
 namespace UnitTests;

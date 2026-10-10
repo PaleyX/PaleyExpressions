@@ -332,7 +332,7 @@ public class Changes1
 
 public class Changes2
 {
-    public double a = 0;
+    public double a;
     public double b = 100;
     public string s = "0";
 }
