@@ -10,6 +10,7 @@ public class PreliminaryTest
     private ExpressionRunner _expressionRunner = null!;
     private AstRunner _astRunner = null!;
     private AstRunner<Test> _astTRunner = null!;
+    private ExpressionRunner<Test> _expressionTRunner;
 
     private readonly Dictionary<string, object?> _variables = new()
     {
@@ -29,6 +30,7 @@ public class PreliminaryTest
     public void Setup()
     {
         _expressionRunner = new ExpressionRunner(Code);
+        _expressionTRunner = new ExpressionRunner<Test>(Code);
         _astRunner = new AstRunner(Code);
         _astTRunner = new AstRunner<Test>(Code);
     }
@@ -47,6 +49,9 @@ public class PreliminaryTest
 
     [Benchmark]
     public object? AstTPreCompiled() => _astTRunner.Interpret(_test);
+
+    [Benchmark]
+    public object? ExprTCompiled() => _expressionTRunner.Interpret(_test);
 }
 
 internal class Program

@@ -1,6 +1,8 @@
-﻿using System.Linq.Expressions;
+﻿using PaleyExpressions.Visitors;
+using PaleyExpressions.Visitors.Exp;
+using System.Linq.Expressions;
 using System.Reflection;
-using PaleyExpressions.Visitors;
+using System.Reflection.Metadata;
 
 namespace PaleyExpressions.Runners;
 
@@ -101,3 +103,24 @@ public class ExpressionRunner(string source, Type? functions = null) : IRunner
         }
     }
 }
+
+public class ExpressionRunner<T>(string source, Type? functions = null) where T : class
+{
+    private Func<T, object?>? _invoker;
+
+    public object? Interpret(T context)
+    {
+        if(_invoker == null)
+        {
+            var expression = Helpers.Parse(source, functions);
+            var builder = new ExpressionBuilder<T>();
+            var built = builder.Build(expression);
+            var bodyAsObject = Expression.Convert(built, typeof(object));
+            var lambda = Expression.Lambda<Func<T, object?>>(bodyAsObject, builder.Context);
+            _invoker = lambda.Compile();
+        }
+
+        return _invoker(context);
+    }
+}
+

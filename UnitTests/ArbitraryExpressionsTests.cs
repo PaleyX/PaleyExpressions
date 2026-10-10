@@ -1,6 +1,8 @@
 ﻿using PaleyExpressions;
 using PaleyExpressions.Runners;
 using System.Diagnostics.CodeAnalysis;
+using FluentAssertions.Specialized;
+using Microsoft.Testing.Platform.Extensions;
 
 namespace UnitTests;
 
@@ -74,15 +76,19 @@ public class ArbitraryExpressionsTests
         var test = new Test();
 
         var astResult = new AstRunner(expression).Interpret(_variables);
-        var expressionsResult = new ExpressionRunner(expression).Interpret(_variables);
         var astTResult = new AstRunner<Test>(expression).Interpret(test);
+
+        var expressionsResult = new ExpressionRunner(expression).Interpret(_variables);
+        var expressionTResult = new ExpressionRunner<Test>(expression).Interpret(test);
 
         Assert.Equal(astResult, expressionsResult);
         Assert.Equal(astResult, astTResult);
+        Assert.Equal(astResult, expressionTResult);
 
         Assert.Equal(expected, astResult);
         Assert.Equal(expected, expressionsResult);
         Assert.Equal(expected, astTResult);
+        Assert.Equal(expected, expressionTResult);
     }
 
     [Theory]
@@ -99,15 +105,19 @@ public class ArbitraryExpressionsTests
         var test = new Test();
 
         var astResult = new AstRunner(expression).Interpret(_variables);
-        var expressionsResult = new ExpressionRunner(expression).Interpret(_variables);
         var astTResult = new AstRunner<Test>(expression).Interpret(test);
+
+        var expressionsResult = new ExpressionRunner(expression).Interpret(_variables);
+        var expressionsTResult = new ExpressionRunner<Test>(expression).Interpret(test);
 
         Assert.Equal(astResult, expressionsResult);
         Assert.Equal(astResult, astTResult);
+        Assert.Equal(astResult, expressionsTResult);
 
         Assert.Equal(expected, astResult);
         Assert.Equal(expected, expressionsResult);
         Assert.Equal(expected, astTResult);
+        Assert.Equal(expected, expressionsTResult);
     }
 
     [Theory]
@@ -125,15 +135,19 @@ public class ArbitraryExpressionsTests
         var test = new Test();
 
         var astResult = new AstRunner(expression).Interpret(_variables);
-        var expressionsResult = new ExpressionRunner(expression).Interpret(_variables);
         var astTResult = new AstRunner<Test>(expression).Interpret(test);
+
+        var expressionsResult = new ExpressionRunner(expression).Interpret(_variables);
+        var expressionsTResult = new ExpressionRunner<Test>(expression).Interpret(test);
 
         Assert.Equal(astResult, expressionsResult);
         Assert.Equal(astResult, astTResult);
+        Assert.Equal(astResult, expressionsTResult);
 
         Assert.Equal(expected, astResult);
         Assert.Equal(expected, expressionsResult);
         Assert.Equal(expected, astTResult);
+        Assert.Equal(expected, expressionsTResult);
     }
 
     [Theory]
@@ -152,11 +166,13 @@ public class ArbitraryExpressionsTests
     public void ShiftThrowsCorrectly_BadTypes(string expression)
     {
         var ex = Assert.Throws<ExpressionException>(() => new ExpressionRunner(expression).Interpret(_variables));
+        var expT = Assert.Throws<ExpressionException>(() => new ExpressionRunner<Test>(expression).Interpret(new Test()));
         var ast = Assert.Throws<ExpressionException>(() => new AstRunner(expression).Interpret(_variables));
         var astT = Assert.Throws<ExpressionException>(() => new AstRunner<Test>(expression).Interpret(new Test()));
 
         Assert.Equal(ex.Message, ast.Message);
         Assert.Equal(ex.Message, astT.Message);
+        Assert.Equal(ex.Message, expT.Message);
         Assert.Equal("Operands must be 2 numbers or a string and a number", ex.Message);
     }
 
@@ -178,15 +194,19 @@ public class ArbitraryExpressionsTests
     public void BuiltinsExpressions(string expression, object? expected)
     {
         var astResult = new AstRunner(expression).Interpret(_variables);
-        var expressionsResult = new ExpressionRunner(expression).Interpret(_variables);
         var astTResult = new AstRunner<Test>(expression).Interpret(new Test());
+
+        var expressionsResult = new ExpressionRunner(expression).Interpret(_variables);
+        var expressionsTResult = new ExpressionRunner<Test>(expression).Interpret(new Test());
 
         Assert.Equal(astResult, expressionsResult);
         Assert.Equal(astResult, astTResult);
+        Assert.Equal(astResult, expressionsTResult);
 
         Assert.Equal(expected, astResult);
         Assert.Equal(expected, expressionsResult);
         Assert.Equal(expected, astTResult);
+        Assert.Equal(expected, expressionsTResult);
     }
 
     [Fact]
@@ -201,8 +221,10 @@ public class ArbitraryExpressionsTests
         const string expression = "a+b";
 
         var astRunner = new AstRunner(expression);
-        var expRunner = new ExpressionRunner(expression);
         var astTRunner = new AstRunner<Changes1>(expression);
+
+        var expRunner = new ExpressionRunner(expression);
+        var expTRunner = new ExpressionRunner<Changes1>(expression);
 
         var changes = new Changes1
         {
@@ -214,9 +236,11 @@ public class ArbitraryExpressionsTests
         var result1 = astRunner.Interpret(vars);
         var result2 = expRunner.Interpret(vars);
         var result3 = astTRunner.Interpret(changes);
+        var result4 = expTRunner.Interpret(changes);
         Assert.Equal(30d, result1);
         Assert.Equal(result1, result2);
         Assert.Equal(result1, result3);
+        Assert.Equal(result1, result4);
 
         // string values
         vars["a"] = "hello";
@@ -228,9 +252,11 @@ public class ArbitraryExpressionsTests
         result1 = astRunner.Interpret(vars);
         result2 = expRunner.Interpret(vars);
         result3 = astTRunner.Interpret(changes);
+        result4 = expTRunner.Interpret(changes);
         Assert.Equal("hello world", result1);
         Assert.Equal(result1, result2);
         Assert.Equal(result1, result3);
+        Assert.Equal(result1, result4);
     }
 
     [Fact]
@@ -254,11 +280,16 @@ public class ArbitraryExpressionsTests
         var astTInc = new AstRunner<Changes2>("a+1");
         var astTDec = new AstRunner<Changes2>("b-1");
 
-        var astToStr = new AstRunner("tostr(a)", typeof(TestFunctions));
-        var expToStr = new ExpressionRunner("tostr(a)", typeof(TestFunctions));
-        var astTToStr = new AstRunner<Changes2>("tostr(a)", typeof(TestFunctions));
+        var expTInc = new ExpressionRunner<Changes2>("a+1");
+        var expTDec = new ExpressionRunner<Changes2>("b-1");
 
-        var changes = new Changes2();
+        var astToStr = new AstRunner("tostr(a)", typeof(TestFunctions));
+        var astTToStr = new AstRunner<Changes2>("tostr(a)", typeof(TestFunctions));
+        var expToStr = new ExpressionRunner("tostr(a)", typeof(TestFunctions));
+        var expTToStr = new ExpressionRunner<Changes2>("tostr(a)", typeof(TestFunctions));
+
+        var changesAst = new Changes2();
+        var changesExp = new Changes2();
 
         for (var i = 0; i < 100; ++i)
         {
@@ -268,20 +299,27 @@ public class ArbitraryExpressionsTests
             expVars["a"] = expInc.Interpret(expVars);
             expVars["b"] = expDec.Interpret(expVars);
 
-            changes.a = (double)astTInc.Interpret(changes)!;
-            changes.b = (double)astTDec.Interpret(changes)!;
+            changesAst.a = (double)astTInc.Interpret(changesAst)!;
+            changesAst.b = (double)astTDec.Interpret(changesAst)!;
+
+            changesExp.a = (double)expTInc.Interpret(changesExp)!;
+            changesExp.b = (double)expTDec.Interpret(changesExp)!;
 
             Assert.Equal(astVars["a"], expVars["a"]);
             Assert.Equal(astVars["b"], expVars["b"]);
-            Assert.Equal(expVars["a"], changes.a);
-            Assert.Equal(expVars["b"], changes.b);
+            Assert.Equal(expVars["a"], changesAst.a);
+            Assert.Equal(expVars["b"], changesAst.b);
+            Assert.Equal(expVars["a"], changesExp.a);
+            Assert.Equal(expVars["b"], changesExp.b);
 
             astVars["s"] = astToStr.Interpret(astVars);
             expVars["s"] = expToStr.Interpret(expVars);
-            changes.s = (string)astTToStr.Interpret(changes)!;
+            changesAst.s = (string)astTToStr.Interpret(changesAst)!;
+            changesExp.s = (string)expTToStr.Interpret(changesExp)!;
 
             Assert.Equal(astVars["s"], expVars["s"]);
-            Assert.Equal(expVars["s"], changes.s);
+            Assert.Equal(expVars["s"], changesAst.s);
+            Assert.Equal(expVars["s"], changesExp.s);
         }
 
         Assert.Equal(100d, astVars["a"]);
@@ -290,12 +328,16 @@ public class ArbitraryExpressionsTests
         Assert.Equal(100d, expVars["a"]);
         Assert.Equal(0d, expVars["b"]);
 
-        Assert.Equal(100d, changes.a);
-        Assert.Equal(0d, changes.b);
+        Assert.Equal(100d, changesAst.a);
+        Assert.Equal(0d, changesAst.b);
+
+        Assert.Equal(100d, changesExp.a);
+        Assert.Equal(0d, changesExp.b);
 
         Assert.Equal("100", astVars["s"]);
         Assert.Equal("100", expVars["s"]);
-        Assert.Equal("100", changes.s);
+        Assert.Equal("100", changesAst.s);
+        Assert.Equal("100", changesExp.s);
     }
 }
 

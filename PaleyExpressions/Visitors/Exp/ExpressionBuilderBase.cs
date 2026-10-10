@@ -2,12 +2,10 @@
 using System.Reflection;
 using static PaleyExpressions.TokenType;
 
-namespace PaleyExpressions.Visitors;
+namespace PaleyExpressions.Visitors.Exp;
 
-internal class ExpressionBuilder : Expr.IVisitor<Expression>
+internal abstract class ExpressionBuilderBase : Expr.IVisitor<Expression>
 {
-    private readonly Dictionary<string, ParameterExpression> _parameters = new();
-
     public Expression Build(Expr expression)
     {
         return expression.Accept(this);
@@ -223,20 +221,6 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
         };
     }
 
-    public Expression VisitVariableExpr(Expr.Variable expr)
-    {
-        if (_parameters.TryGetValue(expr.Name.Lexeme, out var p))
-        {
-            return p;
-        }
-
-        var parameter = Expression.Parameter(typeof(object), expr.Name.Lexeme);
-
-        _parameters.Add(expr.Name.Lexeme, parameter);
-
-        return parameter;
-    }
-
-    public List<ParameterExpression> GetParameters() => [.. _parameters.Values];
+    public abstract Expression VisitVariableExpr(Expr.Variable expr);
 }
 
