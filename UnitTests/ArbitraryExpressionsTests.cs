@@ -339,6 +339,53 @@ public class ArbitraryExpressionsTests
         Assert.Equal("100", changesAst.s);
         Assert.Equal("100", changesExp.s);
     }
+
+    [Fact]
+    public void NumbersInClassesMustBeDoubles()
+    {
+        var x = new NotAcceptedTypes();
+
+        var exp = Assert.Throws<ExpressionException>(() => new ExpressionRunner<NotAcceptedTypes>("i+i").Interpret(x));
+        var ast = Assert.Throws<ExpressionException>(() => new AstRunner<NotAcceptedTypes>("i+i").Interpret(x));
+
+        Assert.Equal(exp.Message, ast.Message);
+        Assert.Equal("Operands must be two numbers or two strings", exp.Message);
+
+        exp = Assert.Throws<ExpressionException>(() => new ExpressionRunner<NotAcceptedTypes>("f+f").Interpret(x));
+        ast = Assert.Throws<ExpressionException>(() => new AstRunner<NotAcceptedTypes>("f+f").Interpret(x));
+
+        Assert.Equal(exp.Message, ast.Message);
+        Assert.Equal("Operands must be two numbers or two strings", exp.Message);
+
+        exp = Assert.Throws<ExpressionException>(() => new ExpressionRunner<NotAcceptedTypes>("d+d").Interpret(x));
+        ast = Assert.Throws<ExpressionException>(() => new AstRunner<NotAcceptedTypes>("d+d").Interpret(x));
+
+        Assert.Equal(exp.Message, ast.Message);
+        Assert.Equal("Operands must be two numbers or two strings", exp.Message);
+    }
+
+    [Fact]
+    public void DifferentAccessModifiersWork()
+    {
+        var x = new AccessModifiers();
+        var exp = new ExpressionRunner<AccessModifiers>("a+b+c+d").Interpret(x);
+        var ast = new AstRunner<AccessModifiers>("a+b+c+d").Interpret(x);
+
+        Assert.Equal(exp, ast);
+        Assert.Equal(100d, exp);
+    }
+
+    [Fact]
+    public void PropertyAccessWorks()
+    {
+        var x = new Properties();
+        var exp = new ExpressionRunner<Properties>("a+b+c+d").Interpret(x);
+        var ast = new AstRunner<Properties>("a+b+c+d").Interpret(x);
+
+        Assert.Equal(exp, ast);
+        Assert.Equal(100d, exp);
+
+    }
 }
 
 public static class TestFunctions
@@ -377,4 +424,27 @@ public class Changes2
     public double a;
     public double b = 100;
     public string s = "0";
+}
+
+public class NotAcceptedTypes
+{
+    public int i = 20;
+    public float f = 20;
+    public decimal d = 20;
+}
+
+public class AccessModifiers
+{
+    public double a = 10;
+    private double b = 20;
+    protected double c = 30;
+    internal double d = 40;
+}
+
+public class Properties
+{
+    public double a { get; set; } = 10;
+    private double b { get; set; } = 20;
+    protected double c { get; set; } = 30;
+    internal double d { get; set; } = 40;
 }
