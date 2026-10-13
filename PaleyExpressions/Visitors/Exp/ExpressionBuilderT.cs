@@ -12,15 +12,7 @@ internal class ExpressionBuilder<T> : ExpressionBuilderBase where T : class
 
     public override Expression VisitVariableExpr(Expr.Variable expr)
     {
-        var mi = typeof(T).GetMember(expr.Name.Lexeme,
-            BindingFlags.Public |
-            BindingFlags.NonPublic |
-            BindingFlags.Instance).FirstOrDefault();
-
-        if (mi == null)
-        {
-            throw new ExpressionException($"Field or property '{expr.Name.Lexeme}' not found.");
-        }
+        var mi = Helpers.GetMember(typeof(T), expr.Name.Lexeme);
 
         return mi.MemberType switch
         {

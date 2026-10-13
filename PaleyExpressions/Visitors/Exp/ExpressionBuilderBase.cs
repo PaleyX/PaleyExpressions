@@ -73,12 +73,12 @@ internal abstract class ExpressionBuilderBase : Expr.IVisitor<Expression>
             }
             case BITWISE_AND:
             {
-                var (lhc, rhc) = Helpers.Conversions<uint>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<BITLONG>(lhs, rhs);
                 return Helpers.Convert<double>(Expression.And(lhc, rhc));
             }
             case BITWISE_OR:
             {
-                var (lhc, rhc) = Helpers.Conversions<uint>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<BITLONG>(lhs, rhs);
                 return Helpers.Convert<double>(Expression.Or(lhc, rhc));
             }
             case SLASH:
@@ -216,7 +216,7 @@ internal abstract class ExpressionBuilderBase : Expr.IVisitor<Expression>
         {
             BANG => Expression.Not(Helpers.Convert<bool>(rhs)),
             MINUS => Expression.Negate(Helpers.Convert<double>(rhs)),
-            BITWISE_NOT => Helpers.Convert<double>(Expression.Not(Helpers.Convert<uint>(rhs))),
+            BITWISE_NOT => Helpers.Convert<double>(Expression.Not(Helpers.Convert<BITLONG>(rhs))),
             _ => throw new ExpressionException("Shouldn't be able to get here")
         };
     }

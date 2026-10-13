@@ -40,7 +40,7 @@ internal abstract class AstInterpreterBase : Expr.IVisitor<object?>
         {
             BANG => !IsTruthy(right),
             MINUS => -CheckNumberOperand(expr.Operator, right),
-            BITWISE_NOT => (double)~(uint)CheckNumberOperand(expr.Operator, right),
+            BITWISE_NOT => (double)~(BITLONG)CheckNumberOperand(expr.Operator, right),
             // Unreachable.
             _ => null
         };
@@ -106,12 +106,12 @@ internal abstract class AstInterpreterBase : Expr.IVisitor<object?>
             case BITWISE_AND:
                 {
                     var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
-                    return (double)((uint)lhs & (uint)rhs);
+                    return (double)((BITLONG)lhs & (BITLONG)rhs);
                 }
             case BITWISE_OR:
                 {
                     var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
-                    return (double)((uint)lhs | (uint)rhs);
+                    return (double)((BITLONG)lhs | (BITLONG)rhs);
                 }
         }
 

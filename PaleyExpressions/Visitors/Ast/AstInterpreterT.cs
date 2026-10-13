@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace PaleyExpressions.Visitors.Ast;
 
@@ -24,15 +23,7 @@ internal class AstInterpreter<T> : AstInterpreterBase where T : class
 
         if (!_getters.TryGetValue(expr.Name.Lexeme, out var getter))
         {
-            var mi = typeof(T).GetMember(expr.Name.Lexeme,
-                BindingFlags.Public |
-                BindingFlags.NonPublic |
-                BindingFlags.Instance).FirstOrDefault();
-
-            if (mi == null)
-            {
-                throw new ExpressionException($"Unknown variable or property '{expr.Name.Lexeme}'");
-            }
+            var mi = Helpers.GetMember(typeof(T), expr.Name.Lexeme);
 
             getter = mi.MemberType switch
             {

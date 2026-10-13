@@ -1,8 +1,6 @@
 ﻿using PaleyExpressions;
 using PaleyExpressions.Runners;
 using System.Diagnostics.CodeAnalysis;
-using FluentAssertions.Specialized;
-using Microsoft.Testing.Platform.Extensions;
 
 namespace UnitTests;
 
@@ -58,10 +56,10 @@ public class ArbitraryExpressionsTests
     [InlineData("n2&n3", 2d)]
     [InlineData("1234&4321", (double)(1234 & 4321))]
     [InlineData("1234|4321", (double)(1234 | 4321))]
-    [InlineData("~255", (double)~(uint)255d)]
+    [InlineData("~255", (double)~(long)255d)]
     [InlineData("n2&~n255", 0d)]
-    [InlineData("~10|255", (double)(~(uint)10d | (uint)255d))]
-    [InlineData("10+~1000", (double)((uint)10d + ~(uint)1000d))]
+    [InlineData("~10|255", (double)(~(long)10d | (long)255d))]
+    [InlineData("10+~1000", (double)((long)10d + ~(long)1000d))]
     [InlineData("bt and bf", false)]
     [InlineData("bf and bt", false)]
     [InlineData("bf or bt", true)]
@@ -100,6 +98,7 @@ public class ArbitraryExpressionsTests
     [InlineData("s << 3", "lo")]
     [InlineData("n1 << 1", 2d)]
     [InlineData("n2 << 2", 8d)]
+    [InlineData("~(10 << 3)", (double)~(10 << 3))]
     public void LeftShiftTests(string expression, object? expected)
     {
         var test = new Test();
@@ -129,7 +128,7 @@ public class ArbitraryExpressionsTests
     [InlineData("s >> 3", "He")]
     [InlineData("n1 >> 1", 0d)]
     [InlineData("n2 >> 1", 1d)]
-
+    [InlineData("~(10 >> 3)", (double)~(10 >> 3))]
     public void RightShiftTests(string expression, object? expected)
     {
         var test = new Test();
@@ -291,7 +290,7 @@ public class ArbitraryExpressionsTests
         var changesAst = new Changes2();
         var changesExp = new Changes2();
 
-        for (var i = 0; i < 100; ++i)
+        for (var i = 0; i < 100; ++i) 
         {
             astVars["a"] = astInc.Interpret(astVars);
             astVars["b"] = astDec.Interpret(astVars);
@@ -384,7 +383,42 @@ public class ArbitraryExpressionsTests
 
         Assert.Equal(exp, ast);
         Assert.Equal(100d, exp);
+    }
 
+    [Fact]
+    public void PropertyWithOnlySetterThrows()
+    {
+        var x = new OnlySetter();
+
+        var ast = Assert.Throws<ArgumentException>(() => new AstRunner<OnlySetter>("Test").Interpret(x));
+        var exp = Assert.Throws<ArgumentException>(() => new ExpressionRunner<OnlySetter>("Test").Interpret(x));
+
+        Assert.Equal("Property Get method was not found.", ast.Message);
+        Assert.Equal("Expression must be readable (Parameter 'expression')", exp.Message);
+    }
+
+    [Fact]
+    public void VeryComplicatedNumericExpressionWorks()
+    {
+        const double a = 10d;
+        const double b = 3.98d;
+        const double c = 78.65d;
+
+        var variables = new Dictionary<string, object?>
+        {
+            {"a", a},
+            {"b", b},
+            {"c", c}
+        };
+
+        const string expr = "abs(((a << 3) + (b * 123.456) / (c % 19 + 1.5) - (a * b) % 7.3) + (((~(a & 0xFF)) | (0x7F << (a % 5))) & 65535)) * ((c / (a + b)) - ((a & 3) << 2)) / (1 + (b % 2.5))";
+        var csharp = Math.Abs(((long)a << 3) + (b * 123.456) / (c % 19 + 1.5) - (a * b) % 7.3 + (((~((long)a & 0xFF)) | (0x7F << (int)(a % 5))) & 65535)) * ((c / (a + b)) - (((long)a & 3) << 2)) / (1 + (b % 2.5));
+        
+        var astResult = new AstRunner(expr).Interpret(variables);
+        var expResult = new ExpressionRunner(expr).Interpret(variables);
+
+        Assert.Equal(csharp, (double)astResult!, 0.001);
+        Assert.Equal(csharp, (double)expResult!, 0.001);
     }
 }
 
@@ -393,6 +427,10 @@ public static class TestFunctions
     [Function("tostr")]
     public static string ToStr(double value) => value.ToString();
 }
+
+#pragma warning disable IDE0051
+#pragma warning disable CS0414 // Field is assigned but its value is never used
+// ReSharper disable InconsistentNaming
 
 public class Test
 {
@@ -423,7 +461,7 @@ public class Changes2
 {
     public double a;
     public double b = 100;
-    public string s = "0";
+    public string s = "1";
 }
 
 public class NotAcceptedTypes
@@ -448,3 +486,16 @@ public class Properties
     protected double c { get; set; } = 30;
     internal double d { get; set; } = 40;
 }
+
+public class OnlySetter
+{
+    public double Test
+    {
+        set => throw new NotImplementedException();
+    }
+}
+
+// ReSharper restore InconsistentNaming
+#pragma warning restore CS0414 // Field is assigned but its value is never used
+#pragma warning restore IDE0051
+

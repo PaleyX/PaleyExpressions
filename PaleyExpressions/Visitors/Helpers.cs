@@ -43,7 +43,7 @@ internal static class Helpers
     {
         return lhs switch
         {
-            double d1 when rhs is double d2 => (double)((int)d1 << (int)d2),
+            double d1 when rhs is double d2 => (double)((BITLONG)d1 << (int)d2),
             string s1 when rhs is double d3 => s1[(int)d3..],
             _ => throw new ExpressionException("Operands must be 2 numbers or a string and a number")
         };
@@ -53,7 +53,7 @@ internal static class Helpers
     {
         return lhs switch
         {
-            double d1 when rhs is double d2 => (double)((int)d1 >> (int)d2),
+            double d1 when rhs is double d2 => (double)((BITLONG)d1 >> (int)d2),
             string s1 when rhs is double d3 => s1[..^(int)d3],
             _ => throw new ExpressionException("Operands must be 2 numbers or a string and a number")
         };
@@ -76,17 +76,14 @@ internal static class Helpers
 
     internal static Expression Convert<T>(Expression convert)
     {
-        // if we are converting to uint and 'convert' is a Parameter,
-        // we need to convert the parameter to double first,
-        // then convert to uint. This is because the parameter is of type object,
-        // and we cannot convert directly from object to uint.
+        // if we are converting to BITLONG 
+        // we need to convert to double first,
+        // then convert to BITLONG. This is because if the item is of type
+        // object we cannot convert directly from object to BITLONG.
 
-        if (typeof(T) == typeof(uint))
+        if (typeof(T) == typeof(BITLONG))
         {
-            if (convert.NodeType == ExpressionType.Parameter)
-            {
-                convert = Convert<double>(convert);
-            }
+            convert = Convert<double>(convert);
         }
 
         if (convert.Type == typeof(T))
@@ -103,6 +100,7 @@ internal static class Helpers
         {
             return expression;
         }
+
         return Expression.Convert(expression, targetType);
     }
 
@@ -122,5 +120,20 @@ internal static class Helpers
 
         result = (default!, default!);
         return false;
+    }
+
+    internal static MemberInfo GetMember(Type type, string memberName)
+    {
+        var mi = type.GetMember(memberName,
+            BindingFlags.Public |
+            BindingFlags.NonPublic |
+            BindingFlags.Instance).FirstOrDefault();
+
+        if (mi == null)
+        {
+            throw new ExpressionException($"Field or property '{memberName}' not found.");
+        }
+
+        return mi;
     }
 }
