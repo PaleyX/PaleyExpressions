@@ -1,5 +1,7 @@
-﻿using System.Runtime.CompilerServices;
+﻿global using BITLONG = long;
+using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("UnitTests")]
 [assembly: InternalsVisibleTo("PerformanceTests")]
+
 

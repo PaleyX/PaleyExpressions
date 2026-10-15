@@ -2,12 +2,10 @@
 using System.Reflection;
 using static PaleyExpressions.TokenType;
 
-namespace PaleyExpressions.Visitors;
+namespace PaleyExpressions.Visitors.Exp;
 
-internal class ExpressionBuilder : Expr.IVisitor<Expression>
+internal abstract class ExpressionBuilderBase : Expr.IVisitor<Expression>
 {
-    private readonly Dictionary<string, ParameterExpression> _parameters = new();
-
     public Expression Build(Expr expression)
     {
         return expression.Accept(this);
@@ -75,12 +73,12 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
             }
             case BITWISE_AND:
             {
-                var (lhc, rhc) = Helpers.Conversions<uint>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<BITLONG>(lhs, rhs);
                 return Helpers.Convert<double>(Expression.And(lhc, rhc));
             }
             case BITWISE_OR:
             {
-                var (lhc, rhc) = Helpers.Conversions<uint>(lhs, rhs);
+                var (lhc, rhc) = Helpers.Conversions<BITLONG>(lhs, rhs);
                 return Helpers.Convert<double>(Expression.Or(lhc, rhc));
             }
             case SLASH:
@@ -218,25 +216,11 @@ internal class ExpressionBuilder : Expr.IVisitor<Expression>
         {
             BANG => Expression.Not(Helpers.Convert<bool>(rhs)),
             MINUS => Expression.Negate(Helpers.Convert<double>(rhs)),
-            BITWISE_NOT => Helpers.Convert<double>(Expression.Not(Helpers.Convert<uint>(rhs))),
+            BITWISE_NOT => Helpers.Convert<double>(Expression.Not(Helpers.Convert<BITLONG>(rhs))),
             _ => throw new ExpressionException("Shouldn't be able to get here")
         };
     }
 
-    public Expression VisitVariableExpr(Expr.Variable expr)
-    {
-        if (_parameters.TryGetValue(expr.Name.Lexeme, out var p))
-        {
-            return p;
-        }
-
-        var parameter = Expression.Parameter(typeof(object), expr.Name.Lexeme);
-
-        _parameters.Add(expr.Name.Lexeme, parameter);
-
-        return parameter;
-    }
-
-    public List<ParameterExpression> GetParameters() => [.. _parameters.Values];
+    public abstract Expression VisitVariableExpr(Expr.Variable expr);
 }
 

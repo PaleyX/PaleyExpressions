@@ -1,7 +1,8 @@
-﻿using FluentAssertions;
+﻿using System.Linq.Expressions;
+using FluentAssertions;
 using PaleyExpressions;
-using PaleyExpressions.Visitors;
-using System.Linq.Expressions;
+using PaleyExpressions.Visitors.Ast;
+using PaleyExpressions.Visitors.Exp;
 
 namespace UnitTests;
 

@@ -2,7 +2,7 @@
 <package>
   <metadata>
 	<id>PaleyExpressions</id>
-	<version>1.0.0</version>
+	<version>1.0.1-pre01</version>
 	<authors>Jonathan Palethorpe</authors>
 	<owners>Jonathan Palethorpe</owners>
 	<requireLicenseAcceptance>false</requireLicenseAcceptance>

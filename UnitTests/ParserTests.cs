@@ -108,6 +108,7 @@ public class ParserTests
 
     [Theory]
     [InlineData("(,)", ",")]
+    [InlineData(")", ")")]
     public void ExpectExpressionThrowsCorrectly(string expression, string unexpected)
     {
         var tokens = new Scanner(expression).ScanTokens();

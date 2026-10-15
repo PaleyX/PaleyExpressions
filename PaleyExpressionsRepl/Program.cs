@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using PaleyExpressions.Runners;
 using PaleyExpressionsRepl;
 
-Dictionary<string, object?> _variables = new();
+Dictionary<string, object?> variables = new();
 
 while(true)
 {
@@ -53,7 +53,7 @@ void ProcessVariable(string command)
 
     var result = ProcessExpression(expression);
 
-    _variables[name] = result;
+    variables[name] = result;
 }
 
 static bool IsValidIdentifier(string name)
@@ -68,7 +68,7 @@ object? ProcessExpression(string expression)
 
     try
     {
-        astResult = new AstRunner(expression, typeof(Functions)).Interpret(_variables);
+        astResult = new AstRunner(expression, typeof(Functions)).Interpret(variables);
     }
     catch (Exception e)
     {
@@ -77,7 +77,7 @@ object? ProcessExpression(string expression)
 
     try
     {
-        exprResult = new ExpressionRunner(expression, typeof(Functions)).Interpret(_variables);
+        exprResult = new ExpressionRunner(expression, typeof(Functions)).Interpret(variables);
     }
     catch (Exception e)
     {

@@ -2,11 +2,12 @@
 
 [![NuGet Version](https://img.shields.io/nuget/v/PaleyExpressions.svg)](https://www.nuget.org/packages/PaleyExpressions/)
 
-PaleyExpressions is a .NET library distributed as a NuGet package. It contains helpers and utilities for evaluating runtime supplied expressions in .NET applications.
+PaleyExpressions is a .NET library distributed as a NuGet package. It contains helpers and utilities for evaluating runtime supplied expressions in .NET applications. It supports passing in variables via a dictionary or a user defined class.
 
 ## Table of contents
 - [Package](#package)
 - [Usage](#usage)
+- [Variables](#variables)
 - [User Defined Functions](#user-defined-functions)
 - [Types](#types)
 - [Operators](#operators)
@@ -33,19 +34,31 @@ Using Package Manager Console:
 Usage
 -----
 
-After installing the package, add a reference and import the package namespace in your C# files.
-PaleyExpressions has 2 ways to evaluate expressions:
+PaleyExpressions has 4 ways to evaluate expressions - each of the evaluation methods uses
+a common scanner and parser to build an abstract syntax tree (AST). That AST is then used by the
+various runners to evaluate the expression. The runners are:
 
-- AstRunner - this walks the abstract syntax tree (AST) of the expression and interprets it. 
-- ExpressionRunner - this compiles the expression into a Microsoft Expression Tree delegate for faster execution.
+|Runner|Description|
+|------|-----------|
+|AstRunner|Walks the AST and interprets it, variables supplied via dictionary|
+|AstRunner&lt;T&gt;|Generic version of AstRunner that reads variable values from an object of type T|
+|ExpressionRunner|Compiles the AST into a Microsoft Expression Tree delegate for faster execution, variables supplied via dictionary|
+|ExpressionRunner&lt;T&gt;|Generic version of ExpressionRunner that reads variable values from an object of type T|
 
 The expression is passed as a string to the constructor of the runner. 
 The first time the Interpret method is called, the expression is parsed and compiled into an AST or Expression Tree.
 Subsequent calls to Interpret will use the cached AST or Expression Tree for faster execution.
 
-Variables can be used within an expression, a variable name name must begin with an alphabetic
-character or an underscore. A variable name can be any length and consist of alphanumeric of underscore
-characters. Variable values are passed to an expression via the Interpret function using Dictionary<string, object?> 
+Variables
+---------
+
+When using the dictionary-based runners, variables are passed to the Interpret method as a Dictionary<string, object?>. 
+The variable names are case sensitive and must begin with an alphabetic character or an underscore. 
+
+When using the generic runners, the variable values are read from an object of type T passed to the Interpret method. The property or field names of the object are used as variable names.
+Private, internal and public fields and properties are supported. 
+
+In all cases the types supported for variables are: double, string and bool. The value of a variable can be null, in which case it will be treated as nil in the expression.
 
 ```csharp
 using PaleyExpressions.Runners;
@@ -95,7 +108,7 @@ Types
 |----|----------------|-----------|
 |Number|10, 3456.765, 0xFF|.Net double|
 |String|"", "Hello"||
-|Boolean|True, False, true, false||
+|Boolean|true, false||
 |Null|nil||
 
 Operators
@@ -151,8 +164,10 @@ Examples
 --------
 Note: whitespace between tokens within an expression is ignored
 
-- `10*(1+2.9)` 
-- `lower("Hello" + " " + "World!")`
+[Try examples using DotNet Fiddle](https://dotnetfiddle.net/pVLaSz)
+
+- `sqr(10*(1+2.9))` 
+- `lower(s + " " + "World!")`
 - `iif(x > 10, upper("x is greater than 10"), upper("x is less than or equal to 10"))`
 - `1 > 2 and 3 < 4`
 - `true and !false`
@@ -160,8 +175,13 @@ Note: whitespace between tokens within an expression is ignored
 Simple REPL example
 -------------------
 This shows how to write a simple REPL for the expression evaluators. 
-It adds some variables and a custom function then runs both evaluators using them
+It adds some variables and a custom function then runs both evaluators using them.
+
+[Try REPL using DotNet Fiddle](https://dotnetfiddle.net/ZeGHuZ)
+
 ```csharp
+using System;
+using System.Collections.Generic;
 using PaleyExpressions;
 using PaleyExpressions.Runners;
 

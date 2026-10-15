@@ -42,7 +42,7 @@ public class ScannerTests
     [InlineData("0xFF", 0xFF)]
     [InlineData("0x1234", 0x1234)]
     [InlineData("0xf", 0xf)]
-    public void NumbersScanCorrectly(string expression, double expected)
+    public void NumberLiteralsScanCorrectly(string expression, double expected)
     {
         var scanner = new Scanner(expression);
         var tokens = scanner.ScanTokens();
@@ -52,6 +52,49 @@ public class ScannerTests
         Assert.Equal(EOF, tokens[1].TokenType);
         Assert.IsType<double>(tokens[0].Literal);
         Assert.Equal(expected, tokens[0].Literal);
+    }
+
+    [Theory]
+    [InlineData("true", true)]
+    [InlineData("false", false)]
+    public void BooleanLiteralsScanCorrectly(string expression, bool expected)
+    {
+        var scanner = new Scanner(expression);
+        var tokens = scanner.ScanTokens();
+
+        var tokenType = Enum.Parse<TokenType>(expression.ToUpper());
+
+        Assert.Equal(2, tokens.Count);
+        Assert.Equal(tokenType, tokens[0].TokenType);
+        Assert.Equal(EOF, tokens[1].TokenType);
+    }
+
+    [Theory]
+    [InlineData("or", true)]
+    [InlineData("and", false)]
+    public void LogicKeywordScanCorrectly(string expression, bool expected)
+    {
+        var scanner = new Scanner(expression);
+        var tokens = scanner.ScanTokens();
+
+        var tokenType = Enum.Parse<TokenType>(expression.ToUpper());
+
+        Assert.Equal(2, tokens.Count);
+        Assert.Equal(tokenType, tokens[0].TokenType);
+        Assert.Equal(EOF, tokens[1].TokenType);
+    }
+
+    [Fact]
+    public void NilLiteralScansCorrectly()
+    {
+        var scanner = new Scanner("nil");
+        var tokens = scanner.ScanTokens();
+
+        var tokenType = Enum.Parse<TokenType>("nil".ToUpper());
+
+        Assert.Equal(2, tokens.Count);
+        Assert.Equal(tokenType, tokens[0].TokenType);
+        Assert.Equal(EOF, tokens[1].TokenType);
     }
 
     [Theory]

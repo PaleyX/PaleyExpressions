@@ -1,19 +1,9 @@
 ﻿using static PaleyExpressions.TokenType;
 
-namespace PaleyExpressions.Visitors;
+namespace PaleyExpressions.Visitors.Ast;
 
-internal class AstInterpreter : Expr.IVisitor<object?>
+internal abstract class AstInterpreterBase : Expr.IVisitor<object?>
 {
-    private Dictionary<string, object?>? _variables;
-
-    public object? Interpret(Expr expression, Dictionary<string, object?>? variables) 
-    {
-        _variables = variables;
-
-        var value = Evaluate(expression);
-        return value;
-    }
-
     public object? VisitLiteralExpr(Expr.Literal expr)
     {
         return expr.Value;
@@ -23,10 +13,10 @@ internal class AstInterpreter : Expr.IVisitor<object?>
     {
         var left = Evaluate(expr.Left);
 
-        if (expr.Operator.TokenType == OR) 
+        if (expr.Operator.TokenType == OR)
         {
             if (IsTruthy(left)) return left;
-        } 
+        }
         else
         {
             if (!IsTruthy(left)) return left;
@@ -40,15 +30,7 @@ internal class AstInterpreter : Expr.IVisitor<object?>
         return Evaluate(expr.Expression);
     }
 
-    public object? VisitVariableExpr(Expr.Variable expr)
-    {
-        if (_variables != null && _variables.TryGetValue(expr.Name.Lexeme, out var value))
-        {
-            return value;
-        }
-
-        throw new ExpressionException($"Unknown variable '{expr.Name.Lexeme}'");
-    }
+    public abstract object? VisitVariableExpr(Expr.Variable expr);
 
     public object? VisitUnaryExpr(Expr.Unary expr)
     {
@@ -58,7 +40,7 @@ internal class AstInterpreter : Expr.IVisitor<object?>
         {
             BANG => !IsTruthy(right),
             MINUS => -CheckNumberOperand(expr.Operator, right),
-            BITWISE_NOT => (double)~(uint)CheckNumberOperand(expr.Operator, right),
+            BITWISE_NOT => (double)~(BITLONG)CheckNumberOperand(expr.Operator, right),
             // Unreachable.
             _ => null
         };
@@ -72,30 +54,30 @@ internal class AstInterpreter : Expr.IVisitor<object?>
         switch (expr.Operator.TokenType)
         {
             case GREATER:
-            {
-                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
-                return lhs > rhs;
-            }
+                {
+                    var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                    return lhs > rhs;
+                }
             case GREATER_EQUAL:
-            {
-                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
-                return lhs >= rhs;
-            }
+                {
+                    var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                    return lhs >= rhs;
+                }
             case LESS:
-            {
-                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
-                return lhs < rhs;
-            }
+                {
+                    var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                    return lhs < rhs;
+                }
             case LESS_EQUAL:
-            {
-                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
-                return lhs <= rhs;
-            }
+                {
+                    var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                    return lhs <= rhs;
+                }
             case MINUS:
-            {
-                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
-                return lhs - rhs;
-            }
+                {
+                    var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                    return lhs - rhs;
+                }
             case BANG_EQUAL:
                 return !IsEqual(left, right);
             case EQUAL_EQUAL:
@@ -107,32 +89,32 @@ internal class AstInterpreter : Expr.IVisitor<object?>
             case RIGHT_SHIFT:
                 return Helpers.RightShift(left, right);
             case SLASH:
-            {
-                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
-                return lhs / rhs;
-            }
+                {
+                    var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                    return lhs / rhs;
+                }
             case STAR:
-            {
-                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
-                return lhs * rhs;
-            }
+                {
+                    var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                    return lhs * rhs;
+                }
             case MOD:
-            {
-                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
-                return lhs % rhs;
-            }
+                {
+                    var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                    return lhs % rhs;
+                }
             case BITWISE_AND:
-            {
-                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
-                return (double)((uint)lhs & (uint)rhs);
-            }
+                {
+                    var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                    return (double)((BITLONG)lhs & (BITLONG)rhs);
+                }
             case BITWISE_OR:
-            {
-                var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
-                return (double)((uint)lhs | (uint)rhs);
-            }
+                {
+                    var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                    return (double)((BITLONG)lhs | (BITLONG)rhs);
+                }
         }
-        
+
         // Unreachable.
         throw ExpressionException.TokenMessage(expr.Operator, "Unknown token");
     }
@@ -151,7 +133,7 @@ internal class AstInterpreter : Expr.IVisitor<object?>
 
             var isParams = parameter.IsDefined(typeof(ParamArrayAttribute), false);
 
-            if(isParams)
+            if (isParams)
             {
                 paramsAdded = true;
 
@@ -191,7 +173,7 @@ internal class AstInterpreter : Expr.IVisitor<object?>
         }
     }
 
-    private object? Evaluate(Expr expr) => expr.Accept(this);
+    protected object? Evaluate(Expr expr) => expr.Accept(this);
 
     private static bool IsTruthy(object? obj)
     {
@@ -225,7 +207,7 @@ internal class AstInterpreter : Expr.IVisitor<object?>
 
     private static (double lhs, double rhs) CheckNumberOperands(Token token, object? left, object? right)
     {
-        if(left is double d1 && right is double d2)
+        if (left is double d1 && right is double d2)
         {
             return (d1, d2);
         }
