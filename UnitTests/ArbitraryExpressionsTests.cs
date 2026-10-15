@@ -411,6 +411,13 @@ public class ArbitraryExpressionsTests
             {"c", c}
         };
 
+        var test = new Test
+        {
+            a = a,
+            b = b,
+            c = c
+        };
+
         const string expr = "abs(((a << 3) + (b * 123.456) / (c % 19 + 1.5) - (a * b) % 7.3) + (((~(a & 0xFF)) | (0x7F << (a % 5))) & 65535)) * ((c / (a + b)) - ((a & 3) << 2)) / (1 + (b % 2.5))";
         var csharp = Math.Abs(((long)a << 3) + (b * 123.456) / (c % 19 + 1.5) - (a * b) % 7.3 + (((~((long)a & 0xFF)) | (0x7F << (int)(a % 5))) & 65535)) * ((c / (a + b)) - (((long)a & 3) << 2)) / (1 + (b % 2.5));
         
@@ -419,6 +426,13 @@ public class ArbitraryExpressionsTests
 
         Assert.Equal(csharp, (double)astResult!, 0.001);
         Assert.Equal(csharp, (double)expResult!, 0.001);
+
+        var astTResult = new AstRunner<Test>(expr).Interpret(test);
+        var expTResult = new ExpressionRunner<Test>(expr).Interpret(test);
+
+        Assert.Equal(csharp, (double)astTResult!, 0.001);
+        Assert.Equal(csharp, (double)expTResult!, 0.001);
+
     }
 }
 

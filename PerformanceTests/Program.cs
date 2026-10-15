@@ -23,7 +23,8 @@ public class PreliminaryTest
     private readonly Test _test = new(); 
 
     //[Params("abs(-1)", "10+10", "iif(1>2,upper(\"hello\"),upper(\"world\"))", "a+b+c", "(1.4+3.5)/c", "a&b")]
-    [Params("c*c", "10*10", "10-c", "abs(-b)", "1+2+3+4+5+6+7+8+9+10", "a*b*c", "upper(s)")]
+    //[Params("c*c", "10*10", "10-c", "abs(-b)", "1+2+3+4+5+6+7+8+9+10", "a*b*c", "upper(s)")]
+    [Params("abs(((a << 3) + (b * 123.456) / (c % 19 + 1.5) - (a * b) % 7.3) + (((~(a & 0xFF)) | (0x7F << (a % 5))) & 65535)) * ((c / (a + b)) - ((a & 3) << 2)) / (1 + (b % 2.5))")]
 
     public string Code = null!;
 
@@ -36,8 +37,13 @@ public class PreliminaryTest
         _astTRunner = new AstRunner<Test>(Code);
     }
 
-    //[Benchmark(Baseline = true)]
-    //public object? AstFromScratch() => Runner.RunAst(Code, _variables);
+    [Benchmark]
+    public object? AstFromScratch() => new AstRunner(Code).Interpret(_variables);
+
+    [Benchmark]
+    public object? ExprTFromScratch() => new ExpressionRunner<Test>(Code).Interpret(_test);
+
+
 
     [Benchmark(Baseline=true)]
     public object? AstPreCompiled() => _astRunner.Interpret(_variables);

@@ -2,11 +2,12 @@
 
 [![NuGet Version](https://img.shields.io/nuget/v/PaleyExpressions.svg)](https://www.nuget.org/packages/PaleyExpressions/)
 
-PaleyExpressions is a .NET library distributed as a NuGet package. It contains helpers and utilities for evaluating runtime supplied expressions in .NET applications.
+PaleyExpressions is a .NET library distributed as a NuGet package. It contains helpers and utilities for evaluating runtime supplied expressions in .NET applications. It supports passing in variables via a dictionary or a user defined class.
 
 ## Table of contents
 - [Package](#package)
 - [Usage](#usage)
+- [Variables](#variables)
 - [User Defined Functions](#user-defined-functions)
 - [Types](#types)
 - [Operators](#operators)
@@ -33,26 +34,31 @@ Using Package Manager Console:
 Usage
 -----
 
-After installing the package, add a reference and import the package namespace in your C# files.
 PaleyExpressions has 4 ways to evaluate expressions - each of the evaluation methods uses
-a common scanner and parser to build an abstract syntax tree. That AST is then used by the
+a common scanner and parser to build an abstract syntax tree (AST). That AST is then used by the
 various runners to evaluate the expression. The runners are:
 
-- AstRunner - this walks the abstract syntax tree (AST) of the expression and interprets it. Variables values are supplied to the Interpret methodusing a dictionary.
-
-- ExpressionRunner - this takes the AST and compiles it into a Microsoft Expression Tree delegate for faster execution. Variables values are supplied to the Interpret method using a dictionary.
-
-- AstRunner&lt;T&gt; - this is a generic version of the AstRunner that uses reflection to read variable values from an object of type T. The object is passed to the Interpret method.
-
-- ExpressionRunner&lt;T&gt; - this is a generic version of the ExpressionRunner that uses reflection to read variable values from an object of type T. The object is passed to the Interpret method.
+|Runner|Description|
+|------|-----------|
+|AstRunner|Walks the AST and interprets it, variables supplied via dictionary|
+|AstRunner&lt;T&gt;|Generic version of AstRunner that reads variable values from an object of type T|
+|ExpressionRunner|Compiles the AST into a Microsoft Expression Tree delegate for faster execution, variables supplied via dictionary|
+|ExpressionRunner&lt;T&gt;|Generic version of ExpressionRunner that reads variable values from an object of type T|
 
 The expression is passed as a string to the constructor of the runner. 
 The first time the Interpret method is called, the expression is parsed and compiled into an AST or Expression Tree.
 Subsequent calls to Interpret will use the cached AST or Expression Tree for faster execution.
-,
-Variables can be used within an expression, a variable name name must begin with an alphabetic
-character or an underscore. A variable name can be any length and consist of alphanumeric or underscore
-characters. Variable names are case sensitive. Variable values are passed to an expression via the Interpret function using Dictionary<string, object?> 
+
+Variables
+---------
+
+When using the dictionary-based runners, variables are passed to the Interpret method as a Dictionary<string, object?>. 
+The variable names are case sensitive and must begin with an alphabetic character or an underscore. 
+
+When using the generic runners, the variable values are read from an object of type T passed to the Interpret method. The property or field names of the object are used as variable names.
+Private, internal and public fields and properties are supported. 
+
+In all cases the types supported for variables are: double, string and bool. The value of a variable can be null, in which case it will be treated as nil in the expression.
 
 ```csharp
 using PaleyExpressions.Runners;
