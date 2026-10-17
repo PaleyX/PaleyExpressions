@@ -1,0 +1,37 @@
+name: Sync C# Project README to Root
+
+on:
+  push:
+    branches:
+      - master  # Change if your default branch is different
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  sync-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Copy README from C# project folder to root
+      - name: Copy README.md from C# project
+        run: |
+          PROJECT_PATH="PaleyExpressions"  # <-- Change to your project folder name
+          if [ -f "$PROJECT_PATH/README.md" ]; then
+            cp "$PROJECT_PATH/README.md" README.md
+            echo "README copied from $PROJECT_PATH to root."
+          else
+            echo "ERROR: $PROJECT_PATH/README.md not found."
+            exit 1
+          fi
+
+      # Step 3: Commit and push changes
+      - name: Commit and push updated README
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "Sync root README from C# project"
+          git push
