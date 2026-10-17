@@ -6,6 +6,9 @@ on:
       - master  # Change if your default branch is different
   workflow_dispatch: # Allows manual trigger from GitHub UI
 
+  permissions:
+    contents: write  # Needed to push changes
+
 jobs:
   sync-readme:
     runs-on: ubuntu-latest
@@ -14,6 +17,8 @@ jobs:
       # Step 1: Checkout the repo
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          persist-credentials: false  # We'll use GITHUB_TOKEN manually
 
       # Step 2: Copy README from C# project folder to root
       - name: Copy README.md from C# project
@@ -35,3 +40,5 @@ jobs:
           git add README.md
           git commit -m "Sync root README from C# project"
           git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
