@@ -6,8 +6,8 @@ on:
       - master  # Change if your default branch is different
   workflow_dispatch: # Allows manual trigger from GitHub UI
 
-  permissions:
-    contents: write  # Needed to push changes
+permissions:
+  contents: write  # Needed to push changes
 
 jobs:
   sync-readme:
