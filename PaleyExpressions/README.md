@@ -2,7 +2,7 @@
 
 [![NuGet Version](https://img.shields.io/nuget/v/PaleyExpressions.svg)](https://www.nuget.org/packages/PaleyExpressions/)
 
-PaleyExpressions is a .NET library distributed as a NuGet package. It contains helpers and utilities for evaluating runtime supplied expressions in .NET applications. It supports passing in variables via a dictionary or a user defined class.
+PaleyExpressions is a .NET library distributed as a NuGet package. It contains helpers and utilities for evaluating runtime supplied expressions in .NET applications. It supports user defined functions and passing in variables via a dictionary or a user defined class.
 
 ## Table of contents
 - [Package](#package)
@@ -38,12 +38,12 @@ PaleyExpressions has 4 ways to evaluate expressions - each of the evaluation met
 a common scanner and parser to build an abstract syntax tree (AST). That AST is then used by the
 various runners to evaluate the expression. The runners are:
 
-|Runner|Description|
-|------|-----------|
-|AstRunner|Walks the AST and interprets it, variables supplied via dictionary|
-|AstRunner&lt;T&gt;|Generic version of AstRunner that reads variable values from an object of type T|
-|ExpressionRunner|Compiles the AST into a Microsoft Expression Tree delegate for faster execution, variables supplied via dictionary|
-|ExpressionRunner&lt;T&gt;|Generic version of ExpressionRunner that reads variable values from an object of type T|
+|Runner|Description|Try it|
+|------|-----------|------|
+|AstRunner|Walks the AST and interprets it, variables supplied via dictionary|[Try](https://dotnetfiddle.net/J9gxYM)|
+|AstRunner&lt;T&gt;|Generic version of AstRunner that reads variable values from an object of type T|[Try](https://dotnetfiddle.net/PYZTSd)|
+|ExpressionRunner|Compiles the AST into a Microsoft Expression Tree delegate for faster execution, variables supplied via dictionary|[Try](https://dotnetfiddle.net/Yb2H5d)|
+|ExpressionRunner&lt;T&gt;|Generic version of ExpressionRunner that reads variable values from an object of type T|[Try](https://dotnetfiddle.net/z0E73O)|
 
 The expression is passed as a string to the constructor of the runner. 
 The first time the Interpret method is called, the expression is parsed and compiled into an AST or Expression Tree.
@@ -175,7 +175,7 @@ Note: whitespace between tokens within an expression is ignored
 Simple REPL example
 -------------------
 This shows how to write a simple REPL for the expression evaluators. 
-It adds some variables and a custom function then runs both evaluators using them.
+It adds some variables and a custom function then runs both non-generic evaluators using them.
 
 [Try REPL using DotNet Fiddle](https://dotnetfiddle.net/ZeGHuZ)
 
