@@ -18,7 +18,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          persist-credentials: false  # We'll use GITHUB_TOKEN manually
+          persist-credentials: true  # Let checkout set up auth so we can push
+          fetch-depth: 0
 
       # Step 2: Copy README from C# project folder to root
       - name: Copy README.md from C# project
@@ -38,7 +39,10 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git commit -m "Sync root README from C# project"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Only commit & push if there are staged changes
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Sync root README from C# project"
+            git push
+          fi
