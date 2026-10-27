@@ -40,12 +40,9 @@ internal abstract class ExpressionBuilderBase : Expr.IVisitor<Expression>
             }
             case MINUS:
             {
-                if (Helpers.TryFoldable<double>(lhs, rhs, out var folds))
-                {
-                    return Expression.Constant(folds.lhs - folds.rhs, typeof(double));
-                }
-                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
-                return Expression.Subtract(lhc, rhc);
+                return BinaryNumeric(lhs, rhs,
+                    (a, b) => a - b,
+                    Expression.Subtract);
             }
             case BANG_EQUAL:
             {
@@ -83,30 +80,21 @@ internal abstract class ExpressionBuilderBase : Expr.IVisitor<Expression>
             }
             case SLASH:
             {
-                if (Helpers.TryFoldable<double>(lhs, rhs, out var folds))
-                {
-                    return Expression.Constant(folds.lhs / folds.rhs, typeof(double));
-                }
-                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
-                return Expression.Divide(lhc, rhc);
+                return BinaryNumeric(lhs, rhs,
+                    (a, b) => a / b,
+                    Expression.Divide);
             }
             case STAR:
             {
-                if (Helpers.TryFoldable<double>(lhs, rhs, out var folds))
-                {
-                    return Expression.Constant(folds.lhs * folds.rhs, typeof(double));
-                }
-                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
-                return Expression.Multiply(lhc, rhc);
+                return BinaryNumeric(lhs, rhs,
+                    (a, b) => a * b,
+                    Expression.Multiply);
             }
             case MOD:
             {
-                if (Helpers.TryFoldable<double>(lhs, rhs, out var folds))
-                {
-                    return Expression.Constant(folds.lhs % folds.rhs, typeof(double));
-                }
-                var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
-                return Expression.Modulo(lhc, rhc);
+                return BinaryNumeric(lhs, rhs,
+                    (a, b) => a % b,
+                    Expression.Modulo);
             }
         }
 
@@ -222,5 +210,20 @@ internal abstract class ExpressionBuilderBase : Expr.IVisitor<Expression>
     }
 
     public abstract Expression VisitVariableExpr(Expr.Variable expr);
+
+    private static Expression BinaryNumeric(
+        Expression lhs,
+        Expression rhs,
+        Func<double, double, double> fold,
+        Func<Expression, Expression, BinaryExpression> build)
+    {
+        if (Helpers.TryFoldable<double>(lhs, rhs, out var f))
+        {
+            return Expression.Constant(fold(f.lhs, f.rhs));
+        }
+
+        var (lhc, rhc) = Helpers.Conversions<double>(lhs, rhs);
+        return build(lhc, rhc);
+    }
 }
 
