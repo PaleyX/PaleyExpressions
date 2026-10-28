@@ -2,6 +2,25 @@
 
 namespace PaleyExpressions;
 
+/*
+ Simplified grammar:
+
+    Expression
+       -> Or
+       -> And
+       -> BitwiseOr
+       -> BitwiseXor
+       -> BitwiseAnd
+       -> Equality
+       -> Comparison
+       -> Shift
+       -> Term
+       -> Factor
+       -> Unary
+       -> Call
+       -> Primary
+ */
+
 internal class Parser(List<Token> tokens, Type? functions = null)
 {
     private int _current;
@@ -53,7 +72,7 @@ internal class Parser(List<Token> tokens, Type? functions = null)
         while (Match(AND))
         {
             var op = Previous();
-            var right = Equality();
+            var right = BitwiseOr();
             expr = new Expr.Logical(expr, op, right);
         }
 
@@ -121,7 +140,7 @@ internal class Parser(List<Token> tokens, Type? functions = null)
         while (Match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL))
         {
             var op = Previous();
-            var right = Term();
+            var right = Shift();
             expr = new Expr.Binary(expr, op, right);
         }
 

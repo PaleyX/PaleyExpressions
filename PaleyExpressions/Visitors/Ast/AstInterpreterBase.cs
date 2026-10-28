@@ -113,6 +113,11 @@ internal abstract class AstInterpreterBase : Expr.IVisitor<object?>
                     var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
                     return (double)((BITLONG)lhs | (BITLONG)rhs);
                 }
+            case BITWISE_XOR:
+                {
+                    var (lhs, rhs) = CheckNumberOperands(expr.Operator, left, right);
+                    return (double)((BITLONG)lhs ^ (BITLONG)rhs);
+                }
         }
 
         // Unreachable.

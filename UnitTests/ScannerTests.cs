@@ -100,7 +100,7 @@ public class ScannerTests
     [Theory]
     [InlineData("0xFF.87", "Unexpected character: '.'")]
     [InlineData("10..9", "Unexpected character: '.'")]
-    [InlineData("0xx", "Empty hexadecimal number")]
+    [InlineData("0xx", "Expected hexadecimal digits after '0x'.")]
     public void BadNumbersThrowCorrectly(string expression, string message)
     {
         var scanner = new Scanner(expression);

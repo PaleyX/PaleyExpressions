@@ -78,6 +78,11 @@ internal abstract class ExpressionBuilderBase : Expr.IVisitor<Expression>
                 var (lhc, rhc) = Helpers.Conversions<BITLONG>(lhs, rhs);
                 return Helpers.Convert<double>(Expression.Or(lhc, rhc));
             }
+            case BITWISE_XOR:
+            {
+                var (lhc, rhc) = Helpers.Conversions<BITLONG>(lhs, rhs);
+                return Helpers.Convert<double>(Expression.ExclusiveOr(lhc, rhc));
+            }
             case SLASH:
             {
                 return BinaryNumeric(lhs, rhs,
