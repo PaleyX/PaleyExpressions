@@ -82,7 +82,7 @@ internal class AstPrinter : Expr.IVisitor<string>
                 case Token token:
                     builder.Append(token.Lexeme);
                     break;
-                case List<Expr> list:
+                case IEnumerable<Expr> list:
                     Transform(builder, [.. list]);
                     break;
                 default:
