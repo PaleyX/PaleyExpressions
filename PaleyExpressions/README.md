@@ -99,7 +99,7 @@ The FunctionAttribute takes a string parameter which is the name of the function
 A class with user defined functions can be passed to the AstRunner or ExpressionRunner constructor to make the functions available in expressions:
 
 ```csharp
-var ast = new AstRunner("reverse('hello')", typeof(Functions));
+var ast = new AstRunner("reverse(\"hello\")", typeof(Functions));
 ```
 
 Types

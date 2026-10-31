@@ -188,7 +188,12 @@ internal class Scanner(string source)
             while (IsDigit(Peek())) Advance();
         }
 
-        AddToken(NUMBER, double.Parse(source[_start.._current]));
+        if(!double.TryParse(source[_start.._current], CultureInfo.InvariantCulture, out var value))
+        {
+            throw new ExpressionException("Invalid number literal.");
+        }
+
+        AddToken(NUMBER, value);
     }
 
     private void ScanIdentifier()
