@@ -81,17 +81,24 @@ internal static class Helpers
         // then convert to BITLONG. This is because if the item is of type
         // object we cannot convert directly from object to BITLONG.
 
-        if (typeof(T) == typeof(BITLONG))
+        try
         {
-            convert = Convert<double>(convert);
-        }
+            if (typeof(T) == typeof(BITLONG))
+            {
+                convert = Convert<double>(convert);
+            }
 
-        if (convert.Type == typeof(T))
+            if (convert.Type == typeof(T))
+            {
+                return convert;
+            }
+
+            return Expression.Convert(convert, typeof(T));
+        }
+        catch (Exception e)
         {
-            return convert;
+            throw new ExpressionException("Error occurred while converting expression: " + e.Message);
         }
-
-        return Expression.Convert(convert, typeof(T));
     }
 
     internal static Expression Convert(Expression expression, Type targetType)

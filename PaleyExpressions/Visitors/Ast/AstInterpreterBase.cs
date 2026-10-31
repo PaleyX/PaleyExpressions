@@ -184,9 +184,9 @@ internal abstract class AstInterpreterBase : Expr.IVisitor<object?>
     {
         return obj switch
         {
-            null => false,
+            //null => false,
             bool value => value,
-            _ => true
+            _ => throw new ExpressionException("Condition must be a Boolean")
         };
     }
 
