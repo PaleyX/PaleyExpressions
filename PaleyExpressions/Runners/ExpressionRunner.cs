@@ -36,16 +36,10 @@ public class ExpressionRunner(string source, Type? functions = null) : IRunner
             var args = GetExpressionArgs(compiled.Parameters, variables);
             return compiled.Invoker(args);
         }
-        catch (Exception e)
+        catch (TargetInvocationException tie)
         {
-            var message = e.Message;
-
-            if (e is TargetInvocationException)
-            {
-                message = e.InnerException?.Message;
-            }
-
-            throw new ExpressionException($"Error evaluating expression: {message}");
+            if (tie.InnerException != null) throw tie.InnerException;
+            throw;
         }
     }
 
