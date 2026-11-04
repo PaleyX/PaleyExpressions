@@ -51,11 +51,15 @@ public class ArbitraryExpressionsTests
     [InlineData("1&1", 1d)]
     [InlineData("1|1", 1d)]
     [InlineData("1&2", 0d)]
+    [InlineData("1^1", 0d)]
+    [InlineData("1^2", 3d)]
     [InlineData("n1|n2", 3d)]
     [InlineData("n1&n2", 0d)]
+    [InlineData("n1^n2", 3d)]
     [InlineData("n2&n3", 2d)]
     [InlineData("1234&4321", (double)(1234 & 4321))]
     [InlineData("1234|4321", (double)(1234 | 4321))]
+    [InlineData("1234^4321", (double)(1234 ^ 4321))]
     [InlineData("~255", (double)~(long)255d)]
     [InlineData("n2&~n255", 0d)]
     [InlineData("~10|255", (double)(~(long)10d | (long)255d))]
@@ -162,6 +166,7 @@ public class ArbitraryExpressionsTests
     [InlineData("false >> 2")]
     [InlineData("nil>>2")]
     [InlineData("2>>nil")]
+    [InlineData("2 >> true")]
     public void ShiftThrowsCorrectly_BadTypes(string expression)
     {
         var ex = Assert.Throws<ExpressionException>(() => new ExpressionRunner(expression).Interpret(_variables));
@@ -256,6 +261,58 @@ public class ArbitraryExpressionsTests
         Assert.Equal(result1, result2);
         Assert.Equal(result1, result3);
         Assert.Equal(result1, result4);
+    }
+
+    [Theory]
+    // + operator is tested separately
+    //[InlineData("10+true")]
+    [InlineData("10-true", '-')]
+    [InlineData("10*true", '*')]
+    [InlineData("10/true", '/')]
+    [InlineData("10%true", '%')]
+    public void NumericBinaryOperators_BoolAndDouble_ThrowCorrectly(string expression, char operatorSymbol)
+    {
+        var ast = Assert.Throws<ExpressionException>(() => new AstRunner(expression).Interpret(_variables));
+        var exp = Assert.Throws<ExpressionException>(() => new ExpressionRunner(expression).Interpret(_variables));
+
+        Assert.Equal($"Operands must be numbers: at '{operatorSymbol}'", ast.Message);
+        Assert.Equal("Cannot convert boolean to double", exp.Message);
+    }
+
+    [Theory]
+    [InlineData("10-\"hello\"", '-')]
+    [InlineData("10*\"hello\"", '*')]
+    [InlineData("10/\"hello\"", '/')]
+    [InlineData("10%\"hello\"", '%')]
+    [InlineData("\"a\"-\"b\"", '-')]
+    [InlineData("\"a\"*\"b\"", '*')]
+    [InlineData("\"a\"/\"b\"", '/')]
+    [InlineData("\"a\"%\"b\"", '%')]
+    public void NumericBinaryOperators_StringAndDouble_ThrowCorrectly(string expression, char operatorSymbol)
+    {
+        var ast = Assert.Throws<ExpressionException>(() => new AstRunner(expression).Interpret(_variables));
+        var exp = Assert.Throws<ExpressionException>(() => new ExpressionRunner(expression).Interpret(_variables));
+
+        Assert.Equal($"Operands must be numbers: at '{operatorSymbol}'", ast.Message);
+        Assert.Equal("Error occurred while converting expression: No coercion operator is defined between types 'System.String' and 'System.Double'.", exp.Message);
+    }
+
+    [Theory]
+    [InlineData("10+true")]
+    [InlineData("true+10")]
+    [InlineData("10+\"hello\"")]
+    [InlineData("\"hello\"+10")]
+    [InlineData("true+\"hello\"")]
+    [InlineData("\"hello\"+true")]
+    [InlineData("true+false")]
+    [InlineData("10+nil")]
+    [InlineData("nil+10")]
+    public void PlusOperatorWithIncompatibleTypes_ThrowsCorrectly(string expression)
+    {
+        var ast = Assert.Throws<ExpressionException>(() => new AstRunner(expression).Interpret(_variables));
+        var exp = Assert.Throws<ExpressionException>(() => new ExpressionRunner(expression).Interpret(_variables));
+        Assert.Equal(ast.Message, exp.Message);
+        Assert.Equal("Operands must be two numbers or two strings", ast.Message);
     }
 
     [Fact]
@@ -432,7 +489,6 @@ public class ArbitraryExpressionsTests
 
         Assert.Equal(csharp, (double)astTResult!, 0.001);
         Assert.Equal(csharp, (double)expTResult!, 0.001);
-
     }
 }
 

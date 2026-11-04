@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
 
 	<PackageId>PaleyExpressions</PackageId>
-	<Version>1.1.0</Version> <!-- 17/10/26-->
+	<Version>1.1.1</Version> <!-- 30/10/26-->
 	<Authors>Jonathan Palethorpe</Authors>
 	<Description>An expression evaluator</Description>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>

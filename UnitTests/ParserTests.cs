@@ -1,5 +1,6 @@
-﻿using System.Reflection;
-using PaleyExpressions;
+﻿using PaleyExpressions;
+using PaleyExpressions.Visitors;
+using System.Reflection;
 
 namespace UnitTests;
 
@@ -132,5 +133,68 @@ public class ParserTests
         var ex = Assert.Throws<ExpressionException>(parser.Parse);
 
         Assert.Equal($"{unexpected} at end", ex.Message);
+    }
+
+    [Theory]
+    // Associativity
+    [InlineData("1 + 2 + 3", "(+ (+ 1 2) 3)")]
+    [InlineData("1 - 2 - 3", "(- (- 1 2) 3)")]
+    [InlineData("1 * 2 * 3", "(* (* 1 2) 3)")]
+    [InlineData("1 / 2 / 3", "(/ (/ 1 2) 3)")]
+    [InlineData("1 << 2 << 3", "(<< (<< 1 2) 3)")]
+    [InlineData("1 | 2 | 3", "(| (| 1 2) 3)")]
+    [InlineData("1 ^ 2 ^ 3", "(^ (^ 1 2) 3)")]
+    [InlineData("1 & 2 & 3", "(& (& 1 2) 3)")]
+    [InlineData("a and b and c", "(and (and a b) c)")]
+    [InlineData("a or b or c", "(or (or a b) c)")]
+
+    // Factor > Term
+    [InlineData("1 + 2 * 3", "(+ 1 (* 2 3))")]
+    [InlineData("1 * 2 + 3", "(+ (* 1 2) 3)")]
+
+    // Unary > Factor
+    [InlineData("-1 * 2", "(* (- 1) 2)")]
+    [InlineData("~1 + 2", "(+ (~ 1) 2)")]
+
+    // Shift > Comparison
+    [InlineData("1 < 2 << 3", "(< 1 (<< 2 3))")]
+    [InlineData("1 << 2 < 3", "(< (<< 1 2) 3)")]
+
+    // Comparison > Equality
+    [InlineData("1 == 2 < 3", "(== 1 (< 2 3))")]
+    [InlineData("1 < 2 == 3", "(== (< 1 2) 3)")]
+
+    // Equality > BitwiseAnd
+    [InlineData("1 & 2 == 3", "(& 1 (== 2 3))")]
+    [InlineData("1 == 2 & 3", "(& (== 1 2) 3)")]
+
+    // BitwiseAnd > BitwiseXor
+    [InlineData("1 ^ 2 & 3", "(^ 1 (& 2 3))")]
+
+    // BitwiseXor > BitwiseOr
+    [InlineData("1 | 2 ^ 3", "(| 1 (^ 2 3))")]
+
+    // BitwiseOr > And
+    [InlineData("a and b | c", "(and a (| b c))")]
+
+    // And > Or
+    [InlineData("a or b and c", "(or a (and b c))")]
+
+    // Parentheses override precedence
+    [InlineData("(1 + 2) * 3", "(* (group (+ 1 2)) 3)")]
+    [InlineData("1 * (2 + 3)", "(* 1 (group (+ 2 3)))")]
+    public void Parser_Produces_Correct_Precedence_And_Associativity(
+        string expression,
+        string expected)
+    {
+        var lexer = new Scanner(expression);
+        var tokens = lexer.ScanTokens();
+
+        var parser = new Parser(tokens);
+        var ast = parser.Parse();
+
+        var actual = new AstPrinter().Print(ast);
+
+        Assert.Equal(expected, actual);
     }
 }

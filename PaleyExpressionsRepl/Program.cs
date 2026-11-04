@@ -47,7 +47,7 @@ void ProcessVariable(string command)
 
     if (!IsValidIdentifier(name))
     {
-        Console.WriteLine("Invalid variable name: '{name}'");
+        Console.WriteLine($"Invalid variable name: '{name}'");
         return;
     }
 

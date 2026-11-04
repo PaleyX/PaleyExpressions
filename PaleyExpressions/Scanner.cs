@@ -53,6 +53,7 @@ internal class Scanner(string source)
             case '&': AddToken(BITWISE_AND); break;
             case '|': AddToken(BITWISE_OR); break;
             case '~': AddToken(BITWISE_NOT); break;
+            case '^': AddToken(BITWISE_XOR); break;
             case '!':
                 AddToken(Match('=') ? BANG_EQUAL : BANG);
                 break;
@@ -122,20 +123,56 @@ internal class Scanner(string source)
         }
     }
 
+    //private void ScanHexadecimal()
+    //{
+    //    // Consume 0x
+    //    _start += 2;
+    //    _current = _start;
+
+    //    while (char.IsAsciiHexDigit(Peek())) Advance();
+
+    //    if (_start == _current)
+    //    {
+    //        throw new ExpressionException("Invalid hexadecimal number");
+    //    }
+
+    //    AddToken(NUMBER, (double)uint.Parse(source[_start.._current], NumberStyles.HexNumber));
+    //}
+
     private void ScanHexadecimal()
     {
-        // Consume 0x
-        _start += 2;
-        _current = _start;
+        // Current state:
+        // _start   -> '0'
+        // _current -> 'x'
 
-        while (char.IsAsciiHexDigit(Peek())) Advance();
+        Advance(); // consume 'x'
 
-        if (_start == _current)
+        var digitsStart = _current;
+
+        while (char.IsAsciiHexDigit(Peek()))
         {
-            throw new ExpressionException("Empty hexadecimal number");
+            Advance();
         }
 
-        AddToken(NUMBER, (double)uint.Parse(source[_start.._current], NumberStyles.HexNumber));
+        if (digitsStart == _current)
+        {
+            throw new ExpressionException(
+                "Expected hexadecimal digits after '0x'.");
+        }
+
+        var digits = source[digitsStart.._current];
+
+        if (!ulong.TryParse(
+                digits,
+                NumberStyles.HexNumber,
+                CultureInfo.InvariantCulture,
+                out var value))
+        {
+            throw new ExpressionException(
+                $"Hexadecimal literal '{source[_start.._current]}' is too large.");
+        }
+
+        AddToken(NUMBER, (double)value);
     }
 
     private void ScanDecimal()
@@ -151,7 +188,12 @@ internal class Scanner(string source)
             while (IsDigit(Peek())) Advance();
         }
 
-        AddToken(NUMBER, double.Parse(source[_start.._current]));
+        if(!double.TryParse(source[_start.._current], CultureInfo.InvariantCulture, out var value))
+        {
+            throw new ExpressionException("Invalid number literal.");
+        }
+
+        AddToken(NUMBER, value);
     }
 
     private void ScanIdentifier()
