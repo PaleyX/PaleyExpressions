@@ -115,6 +115,22 @@ public class ExpressionRunner(string source, Type? functions = null) : IRunner
 
             return base.VisitParameter(node);
         }
+
+        protected override Expression VisitUnary(UnaryExpression node)
+        {
+            // C# conversion rules convert when converting bool to double convert
+            // true to 1 and false to 0 - but this is not what we want in PaleyExpressions.
+            // We want to throw an exception if the user tries to convert a boolean to a double.
+            if (node.NodeType == ExpressionType.Convert && node.Type == typeof(double))
+            {
+                if (node.Operand.Type == typeof(bool))
+                {
+                    throw new ExpressionException("Cannot convert boolean to double");
+                }
+            }
+
+            return base.VisitUnary(node);
+        }
     }
 }
 
