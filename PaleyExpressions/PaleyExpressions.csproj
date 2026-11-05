@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
 
 	<PackageId>PaleyExpressions</PackageId>
-	<Version>1.1.1</Version> <!-- 30/10/26-->
+	<Version>1.1.2-pre</Version> <!-- 30/10/26-->
 	<Authors>Jonathan Palethorpe</Authors>
 	<Description>An expression evaluator</Description>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -35,6 +35,14 @@
 	    <PackagePath>\</PackagePath>
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Don't change the version number - as it is the baseline version-->
+		<PackageReference Include="DotNet.ReproducibleBuilds" Version="1.1.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 
 </Project>
